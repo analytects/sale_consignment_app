@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sale_consignment_report_template_doc">
+        <t t-call="web.external_layout">
+             <div class="page">
+                <div class="oe_structure"/>
+                <t t-if="doc.report_type == 'details'">
+                    <t t-set="total_sale_amount" t-value="0"/>
+                    <t t-set="total_consignment_amount" t-value="0"/>
+                    <t t-set="total_cost_amount" t-value="0"/>
+                    <t t-set="total_profit_amount" t-value="0"/>
+                     <center>
+                         <h4><b>Sale Consignment Order Report</b></h4>
+                     </center>
+                    <table width="100%">
+                        <tr>
+                            <th width="18%">Customer Name</th>
+                            <td width="32%"><span t-field="doc.consignment_order_id.partner_id.name"/> </td>
+                            <th width="18%">Date</th>
+                            <td width="32%"><span t-field="doc.consignment_order_id.date"/> </td>
+                        </tr>
+                        <tr>
+                            <th width="18%">Consignment Order</th>
+                            <td width="32%"><span t-field="doc.consignment_order_id.name"/> </td>
+                            <th width="18%">State</th>
+                            <td width="32%"><span t-field="doc.consignment_order_id.state"/> </td>
+                        </tr>
+                    </table><br></br><br></br>
+                    <table width="100%">
+                        <tr>
+                            <th width="19%">Product</th>
+                            <th width="9%">Quantity</th>
+                            <th width="9%">Sale Qty</th>
+                            <th width="9%">Remaining Qty</th>
+                            <th width="9%">Available Qty</th>
+                            <th width="9%">Unit Price</th>
+                            <th width="9%">Consignment Total</th>
+                            <th width="9%">Sale Total</th>
+                            <th width="9%">Cost Total</th>
+                            <th width="9%">Profit Total</th>
+                        </tr>
+                        <tr t-foreach="doc.consignment_order_id.line_ids" t-as="line_id">
+                            <t t-set="sale_price" t-value="line_id.product_id.lst_price"/>
+                            <t t-set="cost_price" t-value="line_id.product_id.standard_price"/>
+                            <t t-set="sale_amount" t-value="sale_price * line_id.sale_qty"/>
+                            <t t-set="consignment_amount" t-value="sale_price * line_id.quantity"/>
+                            <t t-set="cost_amount" t-value="cost_price * line_id.sale_qty"/>
+                            <t t-set="profit_amount" t-value="sale_amount - cost_amount"/>
+
+                            <td width="19%"><span t-field="line_id.product_id.name"/></td>
+                            <td width="9%"><span t-field="line_id.quantity"/></td>
+                            <td width="9%"><span t-field="line_id.sale_qty"/></td>
+                            <td width="9%"><span t-field="line_id.remain_qty"/></td>
+                            <td width="9%"><span t-field="line_id.qty_on_hand"/></td>
+                            <td width="9%"><span t-esc="sale_price"/></td>
+                            <td width="9%"><span t-esc="consignment_amount"/></td>
+                            <td width="9%"><span t-esc="sale_amount"/></td>
+                            <td width="9%"><span t-esc="cost_amount"/></td>
+                            <td width="9%"><span t-esc="profit_amount"/></td>
+
+                            <t t-set="total_sale_amount" t-value="total_sale_amount + sale_amount"/>
+                            <t t-set="total_consignment_amount" t-value="total_consignment_amount + consignment_amount"/>
+                            <t t-set="total_cost_amount" t-value="total_cost_amount + cost_amount"/>
+                            <t t-set="total_profit_amount" t-value="total_profit_amount + profit_amount"/>
+                        </tr>
+                    </table><br></br>
+                    <table width="30%" align="right">
+                        <tr>
+                            <th width="20">Total Consignment Amount</th>
+                            <td width="10"><span t-esc="total_consignment_amount"/></td>
+                        </tr>
+                        <tr>
+                            <th width="20">Total Sale Amount</th>
+                            <td width="10"><span t-esc="total_sale_amount"/></td>
+                        </tr>
+                        <tr>
+                            <th width="20">Total Cost Amount</th>
+                            <td width="10"><span t-esc="total_cost_amount"/></td>
+                        </tr>
+                        <tr>
+                            <th width="20">Total Profit</th>
+                            <td width="10"><span t-esc="total_profit_amount"/></td>
+                        </tr>
+
+                    </table>
+                 </t>
+                <t t-else="">
+                    <center>
+                         <h4><b>Consignment Sale Order Report</b></h4>
+                     </center>
+                    <table width="100%">
+                        <tr>
+                            <th width="15%">Date To</th>
+                            <td width="35%"><span t-field="doc.date_to"/> </td>
+                            <th width="15%">Date From</th>
+                            <td width="35%"><span t-field="doc.date_to"/> </td>
+                        </tr>
+                    </table> <br></br><br></br>
+                    <table width="100%">
+                        <tr>
+                            <th width="10%">Sale Order</th>
+                            <th width="15%">Consignment Order</th>
+                            <th width="10%">Customer</th>
+                            <th width="24%">Product</th>
+                            <th width="8%">Quantity</th>
+                            <th width="8%">Unit Price</th>
+                            <th width="15%">Consignment State</th>
+                            <th width="10%">Sale State</th>
+                        </tr>
+                        <tr t-foreach="doc.sale_order_line_ids" t-as="line_id">
+                            <td width="10%"><span t-field="line_id.order_id.name"/></td>
+                            <td width="15%"><span t-field="line_id.order_id.consignment_order_id.name"/></td>
+                            <td width="10%"><span t-field="line_id.order_id.partner_id.name"/></td>
+                            <td width="24%"><span t-field="line_id.product_id.name"/></td>
+                            <td width="8%"><span t-field="line_id.product_uom_qty"/></td>
+                            <td width="8%"><span t-field="line_id.price_unit"/></td>
+                            <td width="15%"><span t-field="line_id.order_id.consignment_order_id.state"/></td>
+                            <td width="10%"><span t-field="line_id.order_id.state"/></td>
+                        </tr>
+                    </table>
+                    <br/><br/>
+
+
+                </t>
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+    <template id="sale_consignment_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="sale_consignment_app.sale_consignment_report_template_doc"/>
+            </t>
+        </t>
+    </template>
+</odoo>

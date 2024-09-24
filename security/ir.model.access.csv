@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+
+
+access_consignment_order,access_consignment_order,model_consignment_order,base.group_user,1,1,1,1
+access_consignment_order_line,access_consignment_order_line,model_consignment_order_line,base.group_user,1,1,1,1
+access_consignment_order_lot,access_consignment_order_lot,model_consignment_order_lot,base.group_user,1,1,1,1
+access_sale_order_line_lot,access_sale_order_line_lot,model_sale_order_line_lot,base.group_user,1,1,1,1
+access_create_sale_order_wizard,access_create_sale_order_wizard,model_create_sale_order_wizard,base.group_user,1,1,1,1
+access_create_sale_order_line_wizard,access_create_sale_order_line_wizard,model_create_sale_order_line_wizard,base.group_user,1,1,1,1
+access_create_sale_order_lot_wizard,access_create_sale_order_lot_wizard,model_create_sale_order_lot_wizard,base.group_user,1,1,1,1
+access_sale_consignment_report_wizard,access_sale_consignment_report_wizard,model_sale_consignment_report_wizard,base.group_user,1,1,1,1

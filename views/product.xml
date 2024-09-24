@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="_consignment_product_template_form_inherit" model="ir.ui.view">
+		<field name="name">product.template.form.inherit</field>
+		<field name="model">product.template</field>
+		<field name="inherit_id" ref="product.product_template_only_form_view"/>
+		<field name="arch" type="xml">
+			<xpath expr="//div[@name='options']" position="inside">
+                <div>
+                    <field name="is_consignment"/>
+                    <label for="is_consignment"/>
+                </div>
+			</xpath>
+		</field>
+	</record>
+
+
+     <record id="action_consignment_product" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.template</field>
+        <field name="domain">[('is_consignment', '=', True)]</field>
+        <field name="context">{'default_is_consignment':True}</field>
+        <field name="view_mode">kanban,tree,form,activity</field>
+    </record>
+
+     <menuitem id="menu_consignment_product"
+               name="Products"
+               parent="menu_consignment_configure"
+               action="action_consignment_product"/>
+
+</odoo>

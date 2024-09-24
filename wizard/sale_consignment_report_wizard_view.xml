@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="sale_consignment_report_wizard_form_view" model="ir.ui.view">
+            <field name="name">sale.consignment.report.wizard.wizard</field>
+            <field name="model">sale.consignment.report.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+
+                    <group>
+                        <group>
+                            <field name="report_type" required="1"/>
+                        </group>
+                        <group>
+                            <field name="consignment_order_id" invisible="report_type != 'details'" required  ="report_type != 'sale'"/>
+                            <field name="date_from" invisible="report_type != 'sale'" required  ="report_type != 'details'"/>
+                            <field name="date_to" invisible="report_type != 'sale'" required  ="report_type != 'details'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="sale_order_line_ids" widget="many2many_tags" invisible="1"/>
+                        <field name="product_ids" widget="many2many_tags" invisible="report_type != 'sale'"/>
+                        <field name="partner_ids" widget="many2many_tags" invisible="report_type != 'sale'"/>
+                    </group>
+                    <newline/>
+                    <separator colspan="6"/>
+                    <footer>
+                        <button name="action_print_report" string="Print PDF Report" type="object" class="oe_highlight"/>
+                        <button special="cancel" class="oe_highlight" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_sale_consignment_report_wizard" model="ir.actions.act_window">
+            <field name="name">Report:Consignment Sale</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.consignment.report.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+     <menuitem id="menu_sale_consignment_report"
+               name="Sale Consignment"
+               parent="menu_reporting"
+               action="action_sale_consignment_report_wizard"
+               sequence="1" />
+
+    </data>
+</odoo>

@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>	
+
+		<record id="consignment_order_tree" model="ir.ui.view">
+			<field name="name">consignment.order.tree</field>
+			<field name="model">consignment.order</field>
+			<field name="priority">20</field>
+			<field name="arch" type="xml">
+				<tree>
+					<field name="name"/>
+					<field name="partner_id"/>
+					<field name="date"/>
+					<field name="warehouse_id"/>
+					<field name="sale_order_ids" widget="many2many_tags"/>
+					<field name="state"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="consignment_order_form" model="ir.ui.view">
+			<field name="name">consignment.order.form</field>
+			<field name="model">consignment.order</field>
+			<field name="priority">20</field>
+			<field name="arch" type="xml">
+				<form>
+					<header>
+						<button name="action_waiting_approval"
+								string="Consignment Request"
+								type="object"
+								invisible="state in ('waiting','approved','consignment','sale','done','cancel')"
+								class="oe_highlight" />
+						<button name="action_approval"
+								string="Approve"
+								type="object"
+								invisible="state in ('quotation','approved','consignment','sale','done','cancel')"
+								class="oe_highlight" />
+						<button name="action_confirm"
+								string="Confirm"
+								type="object"
+								invisible="state in ('waiting','quotation','consignment','sale','done','cancel')"
+								class="oe_highlight" />
+
+						<!--
+						<button name="action_unreserved"
+								string="Unreserved"
+								type="object"
+								invisible="state in ('waiting','quotation','approved','sale','done','cancel')"
+								class="oe_highlight" />
+						-->
+						
+						<button name="action_create_sale_order"
+								string="Create Sale Order"
+								type="object"
+								invisible = "state not in ('consignment', 'sale')"
+								class="oe_highlight" />
+						<!--
+						<button name="action_return"
+								string="Return"
+								type="object"
+								invisible="state in ('waiting','approved','consignment','quotation','done','cancel')"
+								class="oe_highlight" />
+						-->
+						<button name="action_done"
+								string="Done"
+								type="object"
+								invisible="state in ('waiting','approved','consignment','quotation','done','cancel')"
+								class="oe_highlight" />
+						<button name="action_cancel"
+								string="Cancel"
+								type="object"
+								invisible="state in ('sale','consignment','done','cancel')"
+								class="oe_highlight" />
+						<field name="state" widget="statusbar" readonly="1"/>
+					</header>
+					<sheet>
+						<div class="oe_button_box">
+							 <button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_picking" invisible="state in ('quotation', 'waiting','cancel')">
+                        		<div class="o_form_field o_stat_info">
+									<span class="o_stat_value">
+										<field name="no_of_pick"/>
+									</span>
+									<span class="o_stat_text">Transferencias</span>
+								</div>
+							</button>
+
+							<!--
+							 <button type="object" class="oe_stat_button" icon="fa-arrow-up" name="action_view_stock_move" invisible="state in ('quotation', 'waiting', 'approved','cancel')">
+                        		<div class="o_form_field o_stat_info">
+									<span class="o_stat_value">
+										<field name="no_of_move"/>
+									</span>
+									<span class="o_stat_text">Movimientos de producto</span>
+								</div>
+							</button>
+							<button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_move_line" invisible="state in ('quotation', 'waiting', 'approved','cancel')">
+                        		<div class="o_form_field o_stat_info">
+									<span class="o_stat_value">
+										<field name="no_of_move_line"/>
+									</span>
+									<span class="o_stat_text">Trazabilidad</span>
+								</div>
+							</button>
+							-->
+
+							<button type="object" class="oe_stat_button" icon="fa-truck" name="action_view_sale_order" invisible="not is_so_create">
+                        		<div class="o_form_field o_stat_info">
+									<span class="o_stat_value">
+										<field name="no_of_so"/>
+									</span>
+									<span class="o_stat_text">Ordenes de venta</span>
+								</div>
+							</button>
+						</div>
+						<div class="oe_title">
+							<h1>
+								<field name="name" placeholder="Name" readonly="1"/>
+							</h1>
+						</div>
+						<group>
+							<group>
+								<field name="partner_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1"/>
+								<field name="warehouse_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" placeholder="Selecciona almacén de consignación" required="1"/>
+								<field name="route_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1"/>
+							</group>
+							<group>
+								<field name="date" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')"/>
+								<field name="sale_order_ids" widget="many2many_tags" readonly="1" force_save="True"/>
+								<field name="is_so_create" invisible="1"/>
+							</group>
+						</group>
+						<notebook>
+							<page string="Consignment Order Line">
+								<field name="line_ids" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')">
+									<tree editable="bottom">
+										<field name="consignment_order_id" column_invisible="1"/>
+										<field name="product_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+										<field name="quantity"/>
+										<field name="sale_qty" readonly="1" force_save="True"/>
+										<field name="remain_qty"/>
+										<field name="qty_on_hand" readonly="1" force_save="True"/>
+										<field name="product_price" readonly="1"/>
+										<field name="show_details" column_invisible="1"/>
+										<button name="action_show_details"
+												string="Register lots, packs, location"
+												type="object"
+												icon="fa-list"
+												invisible = "not show_details"
+												width="0.1"
+												options="{&quot;warn&quot;: true}"/>
+
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+    	</record>
+
+		<record id="consignment_order_search" model="ir.ui.view">
+			<field name="name">consignment.order.search</field>
+			<field name="model">consignment.order</field>
+			<field name="arch" type="xml">
+				<search>
+					<field name="name"/>
+					<field name="partner_id"/>
+					<field name="date"/>
+					<field name="warehouse_id"/>
+					<group expand="0" string="Group By">
+						<filter string="Customer" name="partner_id" context="{'group_by': 'partner_id'}"/>
+						<filter string="Warehouse" name="warehouse_id" context="{'group_by': 'warehouse_id'}"/>
+						<filter string="Date" name="date" context="{'group_by': 'date'}"/>
+					</group>
+				</search>
+			</field>
+		</record>
+
+		<record id="action_consignment_order" model="ir.actions.act_window">
+			<field name="name">Consignment Orders</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">consignment.order</field>
+			<field name="domain">[]</field>
+        	<field name="context">{'default_is_consignment':True}</field>
+			<field name="view_mode">tree,search,form</field>
+		</record>
+
+    <record id="action_consignment_sale" model="ir.actions.act_window">
+        <field name="name">Sale Orders</field>
+        <field name="type">ir.actions.act_window</field>
+       <field name="domain">[('sale_consignment', '=', True)]</field>
+        <field name="context">{'default_is_consignment':True}</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+    </record>
+
+		<menuitem id="root_sale_consignment"
+              name='Sale Consignment'
+              groups="sale_consignment_app.group_sale_consignment"/>
+
+		<menuitem id="menu_consignment_order"
+              name='Consignment Orders'
+              parent="root_sale_consignment"
+              action="action_consignment_order"
+              />
+
+       <menuitem id="menu_consignment_sale_order"
+              name='Sale Orders'
+              parent="root_sale_consignment"
+              action="action_consignment_sale"
+              />
+
+    	<menuitem id="menu_consignment_configure"
+              name='Configuration'
+              parent="root_sale_consignment"/>
+        
+        <menuitem id="menu_reporting"
+              name='Reporting'
+              parent="root_sale_consignment"/>
+
+		<record id="consignment_order_line_view_form" model="ir.ui.view">
+			<field name="name">consignment.order.line.form</field>
+			<field name="model">consignment.order.line</field>
+			<field name="priority">20</field>
+			<field name="arch" type="xml">
+				<form>
+					<sheet>
+						<group>
+							<group>
+								<field name="product_id" options="{'no_create': True, 'no_edit': True}" readonly="1"/>
+								<field name="quantity" readonly="1"/>
+								<field name="sale_qty" readonly="1" force_save="True"/>
+								<field name="show_details" invisible="1"/>
+								<field name="state" invisible="1"/>
+							</group>
+						</group>
+						<notebook>
+							<page string="Consignment Order Line" invisible="not show_details">
+								<field name="consignment_lot_ids" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')">
+									<tree editable="bottom">
+										<field name="consignment_order_line_id" column_invisible="1"/>
+										<field name="product_id" options="{'no_create': True, 'no_open': True}" invisible="1"/>
+										<field name="lot_id" />
+										<field name="quantity"/>
+										<field name="qty_on_hand" readonly="1"/>
+										<field name="uom_id"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+					<footer class="oe_edit_only">
+                        <button string="Confirm" special="save" class="oe_highlight"/>
+                        <button string="Discard" special="cancel"/>
+                    </footer>
+				</form>
+			</field>
+    	</record>
+
+	</data>
+</odoo>

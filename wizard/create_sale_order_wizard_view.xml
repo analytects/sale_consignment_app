@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="create_sale_order_wizard_form_view" model="ir.ui.view">
+            <field name="name">create.sale.order.wizard</field>
+            <field name="model">create.sale.order.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_create_sale_order" string="Create Sale Order" type="object" class="oe_highlight"/>
+                        <button special="cancel" class="oe_highlight" string="Cancel"/>
+                    </header>
+                    <group>
+                        <group>
+                            <field name="consignment_order_id" readonly="1" force_save="True"/>
+                        </group>
+                    </group>
+                    <notebook>
+							<page string="Order Line">
+								<field name="line_ids">
+									<tree editable="bottom">
+										<field name="wizard_id" column_invisible="1"/>
+										<field name="product_id" options="{'no_create': True, 'no_open': True}" readonly="1" force_save="True"/>
+										<field name="quantity" readonly="1" force_save="True"/>
+                                        <field name="unit_price"/>
+                                        <field name="sale_qty" readonly="show_details" force_save="True"/>
+                                        <field name="product_price" readonly="1" force_save="True"/>
+										<field name="stock_move_id" readonly="1" force_save="True"/>
+										<field name="show_details" column_invisible="1"/>
+										<button name="action_show_details"
+												string="Register lots, packs, location"
+												type="object"
+												icon="fa-list"
+												width="0.1"
+												options="{&quot;warn&quot;: true}"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+                    <newline/>
+                    <separator colspan="6"/>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_create_sale_order_wizard" model="ir.actions.act_window">
+            <field name="name">Create Sale Order Wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">create.sale.order.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="create_sale_order_line_wizard_form_view" model="ir.ui.view">
+            <field name="name">create.sale.order.line.wizard</field>
+            <field name="model">create.sale.order.line.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="product_id" readonly="1" force_save="True"/>
+                            <field name="quantity" readonly="1" force_save="True"/>
+                        </group>
+                    </group>
+                    <notebook>
+							<page string="Lot">
+								<field name="lot_line_ids">
+									<tree editable="bottom">
+										<field name="line_id" invisible="1"/>
+										<field name="product_id" force_save="True" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+										<field name="quantity"/>
+										<field name="lot_id" readonly="0" force_save="True" domain="[('product_id', '=', product_id)]"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+                    <newline/>
+                    <separator colspan="6"/>
+                    <footer class="oe_edit_only">
+                        <button string="Confirm" special="save" class="oe_highlight"/>
+                        <button string="Discard" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_partner_consignment_form_inherit" model="ir.ui.view">
+		<field name="name">res.partner.form.inherit</field>
+		<field name="model">res.partner</field>
+		<field name="inherit_id" ref="base.view_partner_form"/>
+		<field name="arch" type="xml">
+			<xpath expr="//field[@name='vat']" position="after">
+                <field name="is_consignment"/>
+			</xpath>
+		</field>
+	</record>
+
+    <record id="action_consignment_customer" model="ir.actions.act_window">
+        <field name="name">Customers</field>
+        <field name="type">ir.actions.act_window</field>
+         <field name="domain">[('is_consignment', '=', True),('partner_type', '=', 'customer')]</field>
+        <field name="context">{'default_is_consignment':True,'default_partner_type':'customer'}</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <menuitem id="menu_consignment_customer"
+              name='Customers'
+              parent="menu_consignment_configure"
+              action="action_consignment_customer"
+              sequence="1" />
+
+    <record id="action_consignment_supplier" model="ir.actions.act_window">
+        <field name="name">Vendors</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="domain">[('is_consignment', '=', True),('partner_type', '=', 'vendor')]</field>
+        <field name="context">{'default_is_consignment':True,'default_partner_type':'vendor'}</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <menuitem id="menu_consignment_supplier"
+              name='Vendors'
+              parent="menu_consignment_configure"
+              action="action_consignment_supplier"
+              sequence="2" />
+
+
+</odoo>
