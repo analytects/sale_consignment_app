@@ -139,7 +139,7 @@
 										<field name="sale_qty" readonly="1" force_save="True"/>
 										<field name="remain_qty"/>
 										<field name="qty_on_hand" readonly="1" force_save="True"/>
-										<field name="product_price" readonly="1"/>
+										<field name="product_price" readonly="0"/>
 										<field name="show_details" column_invisible="1"/>
 										<button name="action_show_details"
 												string="Register lots, packs, location"
