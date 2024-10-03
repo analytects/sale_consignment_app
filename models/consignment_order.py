@@ -420,6 +420,7 @@ class ConsignmentOrder(models.Model):
             'move_type': 'direct',
             'state': 'draft',
             'scheduled_date': self.date,
+            'is_consignment': True,
         }
 
     def _prepare_picking_lines(self, stock_picking):
