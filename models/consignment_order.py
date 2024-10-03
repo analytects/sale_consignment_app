@@ -400,6 +400,15 @@ class ConsignmentOrder(models.Model):
             if stock_picking:
                 stock_picking.button_validate()
 
+                stock_picking_to_delete = self.env['stock.picking'].search([
+                    ('origin', 'like', 'SC-'),
+                    ('state', '=', 'assigned'),
+                    ('origin', '=', stock_picking.origin)
+                ], limit=1)
+
+                if stock_picking_to_delete:
+                    stock_picking_to_delete.unlink()
+
     def _prepare_picking(self):
 
         picking_type = self.env['stock.picking.type'].search([
