@@ -466,6 +466,7 @@ class ConsignmentOrderLine(models.Model):
     _rec_name = 'product_id'
 
     consignment_order_id = fields.Many2one('consignment.order', 'Consignment Order')
+    product_tmpl_id = fields.Many2one('product.template', 'Product', related='product_id.product_tmpl_id', store=True)
     product_id = fields.Many2one('product.product', 'Product')
     stock_move_id = fields.Many2one('stock.move', 'Stock Move')
     quantity = fields.Float(string="Demand")
@@ -515,11 +516,34 @@ class ConsignmentOrderLine(models.Model):
             ),
         }
 
+    """
     @api.model
     def create(self, vals):
         if vals.get('product_id'):
             product = self.env['product.product'].browse(vals['product_id'])
             vals['product_price'] = product.lst_price
+        return super(ConsignmentOrderLine, self).create(vals)
+    """
+
+    @api.model
+    def create(self, vals):
+        if vals.get('product_id'):
+            product = self.env['product.product'].browse(vals['product_id'])
+            consignment_order = self.env['consignment.order'].browse(vals.get('consignment_order_id'))
+
+            if not consignment_order:
+                raise ValidationError(_("No se encontró una orden de consignación válida."))
+
+            partner = consignment_order.partner_id
+
+            if partner.property_product_pricelist:
+                pricelist = partner.property_product_pricelist
+                # Con _get_product_price se obtiene el precio de la tarifa
+                price = pricelist._get_product_price(product, 1.0, partner)
+                vals['product_price'] = price
+            else:
+                vals['product_price'] = product.lst_price
+
         return super(ConsignmentOrderLine, self).create(vals)
 
 class ConsignmentOrderLot(models.Model):
@@ -539,3 +563,18 @@ class ConsignmentOrderLot(models.Model):
         for rec in self:
             if rec.product_id:
                 rec.uom_id = rec.product_id.uom_id
+
+
+#ANADIR FUNCIONALIDAD AL BUSCAR VARIANTES
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        if name:
+            products = self.search([('default_code', operator, name)] + args, limit=limit)
+            if products:
+                product_tmpl_ids = products.mapped('product_tmpl_id')
+                variants = self.search([('product_tmpl_id', 'in', product_tmpl_ids.ids)], limit=limit)
+                return variants.name_get()
+        return super(ProductProduct, self).name_search(name, args=args, operator=operator, limit=limit)
