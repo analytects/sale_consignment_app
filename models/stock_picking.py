@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models, _
-
+from odoo.exceptions import UserError, ValidationError 
 
 class StockPicking(models.Model):
     _inherit = "stock.picking"
@@ -16,6 +16,8 @@ class StockPicking(models.Model):
             ('state', '=', 'assigned'),
             ('origin', '=', self.origin)
         ], limit=1)
+
+        raise UserError(stock_picking_to_delete.id)
 
         if stock_picking_to_delete:
             stock_picking_to_delete.unlink()
