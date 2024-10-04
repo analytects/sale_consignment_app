@@ -8,6 +8,7 @@ class StockPicking(models.Model):
 
     is_consignment = fields.Boolean(string='Is Consignment')
 
+    """
     def button_validate(self):
         res = super(StockPicking, self).button_validate()
 
@@ -17,9 +18,8 @@ class StockPicking(models.Model):
             ('origin', '=', self.origin)
         ], limit=1)
 
-        raise UserError(stock_picking_to_delete.id)
-
         if stock_picking_to_delete:
             stock_picking_to_delete.unlink()
 
         return res
+    """
