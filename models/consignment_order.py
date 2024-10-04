@@ -525,7 +525,6 @@ class ConsignmentOrderLine(models.Model):
         return super(ConsignmentOrderLine, self).create(vals)
     """
 
-    """
     @api.model
     def create(self, vals):
         if vals.get('product_id'):
@@ -546,7 +545,6 @@ class ConsignmentOrderLine(models.Model):
                 vals['product_price'] = product.lst_price
 
         return super(ConsignmentOrderLine, self).create(vals)
-    """
 
 class ConsignmentOrderLot(models.Model):
     _name = "consignment.order.lot"
