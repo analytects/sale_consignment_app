@@ -525,6 +525,7 @@ class ConsignmentOrderLine(models.Model):
         return super(ConsignmentOrderLine, self).create(vals)
     """
 
+    """
     @api.model
     def create(self, vals):
         if vals.get('product_id'):
@@ -545,7 +546,54 @@ class ConsignmentOrderLine(models.Model):
                 vals['product_price'] = product.lst_price
 
         return super(ConsignmentOrderLine, self).create(vals)
+    """
 
+
+    @api.model
+    def create(self, vals):
+        if vals.get('product_id') and vals.get('consignment_order_id'):
+            product = self.env['product.product'].browse(vals['product_id'])
+            consignment_order = self.env['consignment.order'].browse(vals['consignment_order_id'])
+            partner = consignment_order.partner_id
+
+            if not partner:
+                raise UserError(_("No se encontró un contacto válido para la orden de consignación."))
+
+            vals['product_price'] = self._get_product_price(product, partner)
+
+        return super(ConsignmentOrderLine, self).create(vals)
+
+    def _get_product_price(self, product, partner):
+        company = self.env.company
+        pricelist = partner.property_product_pricelist
+
+        if not pricelist:
+            return product.with_company(company).lst_price
+
+        try:
+            price = pricelist._get_product_price(
+                product, 
+                quantity=1.0, 
+                partner=partner, 
+                date=fields.Date.today(), 
+                uom_id=product.uom_id
+            )
+        except Exception as e:
+            # Si hay algún error al obtener el precio de la tarifa, se usa el precio de lista
+            self.env.cr.rollback()
+            price = product.with_company(company).lst_price
+
+        # Asegurarse de que el precio esté en la moneda de la compañía
+        if pricelist.currency_id != company.currency_id:
+            price = pricelist.currency_id._convert(
+                price, 
+                company.currency_id, 
+                company, 
+                fields.Date.today()
+            )
+
+        return price
+    
 class ConsignmentOrderLot(models.Model):
     _name = "consignment.order.lot"
     _rec_name = 'product_id'
