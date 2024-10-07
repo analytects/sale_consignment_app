@@ -548,7 +548,6 @@ class ConsignmentOrderLine(models.Model):
         return super(ConsignmentOrderLine, self).create(vals)
     """
 
-
     @api.model
     def create(self, vals):
         if vals.get('product_id') and vals.get('consignment_order_id'):
@@ -611,7 +610,6 @@ class ConsignmentOrderLot(models.Model):
         for rec in self:
             if rec.product_id:
                 rec.uom_id = rec.product_id.uom_id
-
 
 #ANADIR FUNCIONALIDAD AL BUSCAR VARIANTES
 class ProductProduct(models.Model):
