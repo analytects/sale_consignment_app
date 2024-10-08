@@ -451,6 +451,7 @@ class ConsignmentOrder(models.Model):
                     'picking_id': stock_picking.id,
                     'product_id': line_id.product_id.id,
                     #'product_uom_qty': line_id.quantity,
+                    'product_uom_qty': line_id.quantity,
                     'quantity': line_id.quantity,
                     #'product_uom': line_id.product_id.uom_id.id,
                     'product_uom_id': line_id.product_id.uom_id.id,
