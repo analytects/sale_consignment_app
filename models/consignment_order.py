@@ -453,14 +453,15 @@ class ConsignmentOrder(models.Model):
                     #'product_uom_qty': line_id.quantity,
                     'product_uom_qty': line_id.quantity,
                     'quantity': line_id.quantity,
-                    #'product_uom': line_id.product_id.uom_id.id,
-                    'product_uom_id': line_id.product_id.uom_id.id,
+                    'product_uom': line_id.product_id.uom_id.id,
+                    #'product_uom_id': line_id.product_id.uom_id.id,
                     'location_id': stock_picking.location_id.id,
                     'location_dest_id': stock_picking.location_dest_id.id,
                     #'name': self.name,
                 }))
         
-        stock_picking.write({'move_line_ids': move_lines})
+        #stock_picking.write({'move_line_ids': move_lines})
+        stock_picking.write({'move_ids_without_package': move_lines})
 
 class ConsignmentOrderLine(models.Model):
     _name = "consignment.order.line"
