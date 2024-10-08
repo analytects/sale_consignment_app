@@ -457,7 +457,7 @@ class ConsignmentOrder(models.Model):
                     #'product_uom_id': line_id.product_id.uom_id.id,
                     'location_id': stock_picking.location_id.id,
                     'location_dest_id': stock_picking.location_dest_id.id,
-                    #'name': self.name,
+                    'name': self.name,
                 }))
         
         #stock_picking.write({'move_line_ids': move_lines})
