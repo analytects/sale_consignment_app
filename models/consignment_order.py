@@ -402,6 +402,7 @@ class ConsignmentOrder(models.Model):
 
                 raise UserError("No se ha validado la transferencia que ingresa el producto a la ubicación de consignación, vefique en inventario antes de confirmar.")
 
+                """
                 stock_picking_to_delete = self.env['stock.picking'].search([
                     ('origin', 'like', 'SC-'),
                     ('state', '=', 'assigned'),
@@ -410,6 +411,7 @@ class ConsignmentOrder(models.Model):
 
                 if stock_picking_to_delete:
                     stock_picking_to_delete.unlink()
+                """
 
     def _prepare_picking(self):
 
