@@ -394,7 +394,7 @@ class ConsignmentOrder(models.Model):
 
             stock_picking = self.env['stock.picking'].search([
                 ('origin', '=', rec.name),
-                ('state', '!=', 'done') 
+                ('state', 'in', ['draft','waiting','confirmed','assigned']) 
             ], limit=1)
 
             if stock_picking:
