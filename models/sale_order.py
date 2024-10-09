@@ -10,14 +10,7 @@ class SaleOrderInherit(models.Model):
     sale_consignment = fields.Boolean(string='Sale Consignment')
     consignment_order_id = fields.Many2one('consignment.order', 'Consignment Order')
     route_id = fields.Many2one('stock.route', 'Route')
-
-    delivery_count_mirror = fields.Integer(string='Delivery Count Mirror', compute='_compute_delivery_count_mirror', store=True)
-
-    @api.depends('delivery_count')
-    def _compute_delivery_count_mirror(self):
-        for order in self:
-            order.delivery_count_mirror = order.delivery_count
-
+    
     def action_view_stock_move_line(self):
         move_line_ids = self.env['stock.move.line'].search([('origin', '=', self.name)])
         xml_id = 'stock.view_move_line_tree'
