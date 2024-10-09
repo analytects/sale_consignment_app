@@ -2,7 +2,6 @@
 
 from odoo import api, fields, models, _
 
-
 class SaleOrderInherit(models.Model):
     _inherit = "sale.order"
 
@@ -10,7 +9,7 @@ class SaleOrderInherit(models.Model):
     sale_consignment = fields.Boolean(string='Sale Consignment')
     consignment_order_id = fields.Many2one('consignment.order', 'Consignment Order')
     route_id = fields.Many2one('stock.route', 'Route')
-    
+
     def action_view_stock_move_line(self):
         move_line_ids = self.env['stock.move.line'].search([('origin', '=', self.name)])
         xml_id = 'stock.view_move_line_tree'

@@ -438,6 +438,7 @@ class ConsignmentOrder(models.Model):
         move_lines = []
         for line_id in self.line_ids:
 
+            #Buscar ubicaciones con stock
             quant_domain = [
                 ('product_id', '=', line_id.product_id.id),
                 ('location_id', 'child_of', stock_picking.location_id.id),
