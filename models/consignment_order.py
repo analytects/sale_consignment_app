@@ -437,6 +437,18 @@ class ConsignmentOrder(models.Model):
     def _prepare_picking_lines(self, stock_picking):
         move_lines = []
         for line_id in self.line_ids:
+
+            quant_domain = [
+                ('product_id', '=', line_id.product_id.id),
+                ('location_id', 'child_of', stock_picking.location_id.id),
+                ('inventory_quantity_auto_apply', '>=', line_id.quantity)
+            ]
+            stock_quant = self.env['stock.quant'].search(quant_domain, limit=1)
+            if stock_quant:
+                location_temp = stock_quant.location_id.id
+            else:
+                location_temp = stock_picking.location_id.id
+
             if line_id.show_details:
                 for line_lot in line_id.consignment_lot_ids:
                     move_lines.append((0, 0, {
@@ -457,7 +469,8 @@ class ConsignmentOrder(models.Model):
                     'quantity': line_id.quantity,
                     'product_uom': line_id.product_id.uom_id.id,
                     #'product_uom_id': line_id.product_id.uom_id.id,
-                    'location_id': stock_picking.location_id.id,
+                    #'location_id': stock_picking.location_id.id,
+                    'location_id': location_temp,
                     'location_dest_id': stock_picking.location_dest_id.id,
                     'name': self.name,
                 }))
