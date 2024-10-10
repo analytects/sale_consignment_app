@@ -10,45 +10,62 @@
                     <t t-set="total_cost_amount" t-value="0"/>
                     <t t-set="total_profit_amount" t-value="0"/>
                      <center>
-                         <h4><b>Sale Consignment Order Report</b></h4>
+                         <h4><b>Informe de orden de venta en consignación</b></h4>
                      </center>
                     <table width="100%">
                         <tr>
-                            <th width="18%">Customer Name</th>
+                            <th width="18%">Nombre del cliente</th>
                             <td width="32%"><span t-field="doc.consignment_order_id.partner_id.name"/> </td>
-                            <th width="18%">Date</th>
+                            <th width="18%">Fecha</th>
                             <td width="32%"><span t-field="doc.consignment_order_id.date"/> </td>
                         </tr>
                         <tr>
-                            <th width="18%">Consignment Order</th>
+                            <th width="18%">Orden de consignación</th>
                             <td width="32%"><span t-field="doc.consignment_order_id.name"/> </td>
-                            <th width="18%">State</th>
+                            <th width="18%">Estado</th>
                             <td width="32%"><span t-field="doc.consignment_order_id.state"/> </td>
                         </tr>
                     </table><br></br><br></br>
                     <table width="100%">
                         <tr>
-                            <th width="19%">Product</th>
-                            <th width="9%">Quantity</th>
-                            <th width="9%">Sale Qty</th>
-                            <th width="9%">Remaining Qty</th>
-                            <th width="9%">Available Qty</th>
-                            <th width="9%">Unit Price</th>
-                            <th width="9%">Consignment Total</th>
-                            <th width="9%">Sale Total</th>
-                            <th width="9%">Cost Total</th>
-                            <th width="9%">Profit Total</th>
+                            <th width="40%">Producto</th>
+                            <th width="15%">Cantidad</th>
+                            <th width="15%">Cantidad <br/> entregada</th>
+                            <th width="15%">Precio de <br/> lista</th>
+                            <th width="15%">Monto <br/> facturado</th>
+                            <!--<th width="9%">Cantidad de venta</th>
+                            <th width="9%">Cantidad restante</th>
+                            <th width="9%">Cantidad disponible</th>
+                            <th width="9%">Precio Unitario</th>
+                            <th width="9%">Total Consignación</th>
+                            <th width="9%">Venta Total</th>
+                            <th width="9%">Costo Total</th>
+                            <th width="9%">Beneficio Total</th>-->
                         </tr>
+
+                        <t t-set="total_quantity" t-value="0"/>
+                        <t t-set="total_delivery" t-value="0"/>
+                        <t t-set="total_price" t-value="0"/>
+                        <t t-set="total_invoiced" t-value="0"/>
+
                         <tr t-foreach="doc.consignment_order_id.line_ids" t-as="line_id">
+
+                            <!--
                             <t t-set="sale_price" t-value="line_id.product_id.lst_price"/>
                             <t t-set="cost_price" t-value="line_id.product_id.standard_price"/>
                             <t t-set="sale_amount" t-value="sale_price * line_id.sale_qty"/>
                             <t t-set="consignment_amount" t-value="sale_price * line_id.quantity"/>
                             <t t-set="cost_amount" t-value="cost_price * line_id.sale_qty"/>
                             <t t-set="profit_amount" t-value="sale_amount - cost_amount"/>
+                            -->
 
-                            <td width="19%"><span t-field="line_id.product_id.name"/></td>
-                            <td width="9%"><span t-field="line_id.quantity"/></td>
+                            <td width="40%"><span t-field="line_id.product_id.name"/></td>
+                            <td width="15%"><span t-field="line_id.quantity"/></td>
+                            <td width="15%"><span t-field="line_id.quantity_delivery"/></td>
+                            <td width="15%"><span t-field="line_id.product_price"/></td>
+                            <td width="15%"><span t-field="line_id.price_invoiced"/></td>
+                            
+                            <!--
                             <td width="9%"><span t-field="line_id.sale_qty"/></td>
                             <td width="9%"><span t-field="line_id.remain_qty"/></td>
                             <td width="9%"><span t-field="line_id.qty_on_hand"/></td>
@@ -57,55 +74,81 @@
                             <td width="9%"><span t-esc="sale_amount"/></td>
                             <td width="9%"><span t-esc="cost_amount"/></td>
                             <td width="9%"><span t-esc="profit_amount"/></td>
+                            -->
 
+                            <!--
                             <t t-set="total_sale_amount" t-value="total_sale_amount + sale_amount"/>
                             <t t-set="total_consignment_amount" t-value="total_consignment_amount + consignment_amount"/>
                             <t t-set="total_cost_amount" t-value="total_cost_amount + cost_amount"/>
                             <t t-set="total_profit_amount" t-value="total_profit_amount + profit_amount"/>
+                            -->
+
+                            <t t-set="total_quantity" t-value="total_quantity + line_id.quantity"/>
+                            <t t-set="total_delivery" t-value="total_delivery + line_id.quantity_delivery"/>
+                            <t t-set="total_price" t-value="total_price + line_id.product_price"/>
+                            <t t-set="total_invoiced" t-value="total_invoiced + line_id.price_invoiced"/>
+
                         </tr>
                     </table><br></br>
                     <table width="30%" align="right">
+                        <!--
                         <tr>
-                            <th width="20">Total Consignment Amount</th>
+                            <th width="20">Monto Total Consignación</th>
                             <td width="10"><span t-esc="total_consignment_amount"/></td>
                         </tr>
                         <tr>
-                            <th width="20">Total Sale Amount</th>
+                            <th width="20">Monto Total Venta</th>
                             <td width="10"><span t-esc="total_sale_amount"/></td>
                         </tr>
                         <tr>
-                            <th width="20">Total Cost Amount</th>
+                            <th width="20">Monto Total Costo</th>
                             <td width="10"><span t-esc="total_cost_amount"/></td>
                         </tr>
                         <tr>
-                            <th width="20">Total Profit</th>
+                            <th width="20">Beneficio Total</th>
                             <td width="10"><span t-esc="total_profit_amount"/></td>
                         </tr>
-
+                        -->
+                        <tr>
+                            <th width="20">Cantidades solicitadas</th>
+                            <td width="10"><span t-esc="total_quantity"/></td>
+                        </tr>
+                        <tr>
+                            <th width="20">Cantidades entregadas</th>
+                            <td width="10"><span t-esc="total_delivery"/></td>
+                        </tr>
+                        <tr>
+                            <th width="20">Total precio lista</th>
+                            <td width="10"><span t-esc="total_price"/></td>
+                        </tr>
+                        <tr>
+                            <th width="20">Total facturado</th>
+                            <td width="10"><span t-esc="total_invoiced"/></td>
+                        </tr>
                     </table>
                  </t>
                 <t t-else="">
                     <center>
-                         <h4><b>Consignment Sale Order Report</b></h4>
+                         <h4><b>Informe de orden de venta en consignación</b></h4>
                      </center>
                     <table width="100%">
                         <tr>
-                            <th width="15%">Date To</th>
+                            <th width="15%">Desde</th>
                             <td width="35%"><span t-field="doc.date_to"/> </td>
-                            <th width="15%">Date From</th>
+                            <th width="15%">Hasta</th>
                             <td width="35%"><span t-field="doc.date_to"/> </td>
                         </tr>
                     </table> <br></br><br></br>
                     <table width="100%">
                         <tr>
-                            <th width="10%">Sale Order</th>
-                            <th width="15%">Consignment Order</th>
-                            <th width="10%">Customer</th>
-                            <th width="24%">Product</th>
-                            <th width="8%">Quantity</th>
-                            <th width="8%">Unit Price</th>
-                            <th width="15%">Consignment State</th>
-                            <th width="10%">Sale State</th>
+                            <th width="10%">Orden de venta</th>
+                            <th width="15%">Orden de consignación</th>
+                            <th width="10%">Cliente</th>
+                            <th width="24%">Producto</th>
+                            <th width="8%">Cantidad</th>
+                            <th width="8%">Precio Unitario</th>
+                            <th width="15%">Estado consignación</th>
+                            <th width="10%">Estado de venta</th>
                         </tr>
                         <tr t-foreach="doc.sale_order_line_ids" t-as="line_id">
                             <td width="10%"><span t-field="line_id.order_id.name"/></td>

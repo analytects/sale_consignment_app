@@ -504,6 +504,10 @@ class ConsignmentOrderLine(models.Model):
 
     product_price = fields.Float(string="Precio Lista", readonly=True)
 
+    quantity_delivery = fields.Float(string="Cantidad entregada", compute="_compute_quantity_delivery", readonly=True)
+
+    price_invoiced = fields.Float(string="Facturado", compute="_compute_price_invoiced", readonly=True)
+
     @api.depends('product_id')
     def compute_show_details(self):
         for rec in self:
@@ -612,7 +616,50 @@ class ConsignmentOrderLine(models.Model):
             )
 
         return price
-    
+
+    @api.depends('consignment_order_id')
+    def _compute_quantity_delivery(self):
+        for line in self:
+            total_quantity = 0.0
+
+            stock_pickings = self.env['stock.picking'].search([
+                ('origin', '=', line.consignment_order_id.name),
+                ('state', '=', 'done')
+            ])
+
+            for picking in stock_pickings:
+                for move in picking.move_ids_without_package:
+                    if move.product_id == line.product_id:
+                        total_quantity += move.quantity
+
+            line.quantity_delivery = total_quantity
+
+    @api.depends('consignment_order_id')
+    def _compute_price_invoiced(self):
+        for line in self:
+            total_invoiced = 0.0
+
+            sale_order = self.env['sale.order'].search([
+                ('origin', '=', line.consignment_order_id.name),
+                ('state', '=', 'sale')
+            ])
+
+            if sale_order:
+                for so in sale_order:
+
+                    account_move = self.env['account.move'].search([
+                        ('invoice_origin', '=', so.name),
+                        ('state', '=', 'posted')
+                    ])
+
+                    if account_move:
+                        for move in account_move:
+                            for i in move.invoice_line_ids:
+                                if i.product_id == line.product_id:
+                                    total_invoiced += i.price_total
+
+            line.price_invoiced = total_invoiced
+
 class ConsignmentOrderLot(models.Model):
     _name = "consignment.order.lot"
     _rec_name = 'product_id'
