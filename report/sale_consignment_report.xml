@@ -49,7 +49,6 @@
                         <t t-set="total_invoiced" t-value="0"/>
 
                         <tr t-foreach="doc.consignment_order_id.line_ids" t-as="line_id">
-
                             <!--
                             <t t-set="sale_price" t-value="line_id.product_id.lst_price"/>
                             <t t-set="cost_price" t-value="line_id.product_id.standard_price"/>
@@ -58,13 +57,11 @@
                             <t t-set="cost_amount" t-value="cost_price * line_id.sale_qty"/>
                             <t t-set="profit_amount" t-value="sale_amount - cost_amount"/>
                             -->
-
                             <td width="40%"><span t-field="line_id.product_id.name"/></td>
                             <td width="15%"><span t-field="line_id.quantity" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="15%"><span t-field="line_id.quantity_delivery" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="15%"><span t-field="line_id.product_price" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="15%"><span t-field="line_id.price_invoiced" t-options='{"widget": "float", "precision": 2}'/></td>
-                            
                             <!--
                             <td width="9%"><span t-field="line_id.sale_qty"/></td>
                             <td width="9%"><span t-field="line_id.remain_qty"/></td>
@@ -87,7 +84,6 @@
                             <t t-set="total_delivery" t-value="total_delivery + line_id.quantity_delivery"/>
                             <t t-set="total_price" t-value="total_price + line_id.product_price"/>
                             <t t-set="total_invoiced" t-value="total_invoiced + line_id.price_invoiced"/>
-
                         </tr>
                     </table><br></br>
                     <table width="30%" align="right">
