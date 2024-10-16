@@ -1,6 +1,7 @@
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
+
 class StockReturnPicking(models.TransientModel):
     _inherit = 'stock.return.picking'
 
