@@ -677,22 +677,20 @@ class ConsignmentOrderLot(models.Model):
             if rec.product_id:
                 rec.uom_id = rec.product_id.uom_id
 
+"""
 #ANADIR FUNCIONALIDAD AL BUSCAR VARIANTES
-
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
-    """
-    @api.model
-    def name_search(self, name, args=None, operator='ilike', limit=100):
-        if name:
-            products = self.search([('default_code', operator, name)] + args, limit=limit)
-            if products:
-                product_tmpl_ids = products.mapped('product_tmpl_id')
-                variants = self.search([('product_tmpl_id', 'in', product_tmpl_ids.ids)], limit=limit)
-                return variants.name_get()
-        return super(ProductProduct, self).name_search(name, args=args, operator=operator, limit=limit)
-    """
+    #@api.model
+    #def name_search(self, name, args=None, operator='ilike', limit=100):
+    #    if name:
+    #        products = self.search([('default_code', operator, name)] + args, limit=limit)
+    #        if products:
+    #            product_tmpl_ids = products.mapped('product_tmpl_id')
+    #            variants = self.search([('product_tmpl_id', 'in', product_tmpl_ids.ids)], limit=limit)
+    #            return variants.name_get()
+    #    return super(ProductProduct, self).name_search(name, args=args, operator=operator, limit=limit)
 
     @api.model
     def name_search(self, name, args=None, operator='ilike', limit=100):
@@ -705,3 +703,4 @@ class ProductProduct(models.Model):
                 variants = self.search([('product_tmpl_id', 'in', product_tmpl_ids.ids)], limit=limit)
                 return variants.name_get()
         return super(ProductProduct, self).name_search(name, args=args, operator=operator, limit=limit)
+"""
