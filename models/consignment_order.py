@@ -502,9 +502,7 @@ class ConsignmentOrderLine(models.Model):
                              store=True)
 
     product_price = fields.Float(string="Precio Lista", readonly=True)
-
     quantity_delivery = fields.Float(string="Cantidad entregada", compute="_compute_quantity_delivery", readonly=True)
-
     price_invoiced = fields.Float(string="Facturado", compute="_compute_price_invoiced", readonly=True)
 
     @api.depends('product_id')
