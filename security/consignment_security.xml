@@ -4,4 +4,8 @@
         <field name="name">Sale Consignment Feature</field>
         <field name="users" eval="[(4, ref('base.group_user'))]"/>
     </record>
+    <record model="res.groups" id="group_sale_consignment_quants">
+        <field name="name">Sale Consignment Feature (Quants)</field>
+        <field name="users" eval="[(4, ref('base.group_user'))]"/>
+    </record>
 </odoo>
