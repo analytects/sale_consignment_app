@@ -198,6 +198,7 @@ class ConsignmentOrder(models.Model):
         }
 
     #Método de momento no se usa ya que se cambio la logica para crear un pick directamente
+    
     """
     def action_unreserved(self):
         for line_id in self.line_ids:
