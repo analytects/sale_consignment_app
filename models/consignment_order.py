@@ -38,7 +38,11 @@ class ConsignmentOrder(models.Model):
     #location_id = fields.Many2one('stock.location', 'Ubicación de origen', required=True)
     #location_dest_id = fields.Many2one('stock.location', 'Ubicación de destino', required=True)
 
-    sale_order_id = fields.Many2one('sale.order', string='Orden existente', tracking=True)
+    sale_order_id = fields.Many2one(
+        'sale.order', 
+        string='Orden existente', 
+        domain="[('state', 'in', ['draft','sent'])]",
+        tracking=True)
 
     @api.onchange('sale_order_id')
     def _onchange_sale_order_id(self):
