@@ -13,6 +13,7 @@
 					<field name="date"/>
 					<field name="warehouse_id"/>
 					<field name="sale_order_ids" widget="many2many_tags"/>
+					<field name="sale_order_id"/>
 					<field name="state"/>
 				</tree>
 			</field>
@@ -126,6 +127,7 @@
 							<group>
 								<field name="date" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')"/>
 								<field name="sale_order_ids" widget="many2many_tags" readonly="1" force_save="True"/>
+								<field name="sale_order_id"/>
 								<field name="is_so_create" invisible="1"/>
 							</group>
 						</group>
@@ -204,6 +206,7 @@
 
 		<menuitem id="root_sale_consignment"
               name='Sale Consignment'
+			  web_icon="sale_consignment_app,static/src/img/consignacion.png" 
               groups="sale_consignment_app.group_sale_consignment"/>
 
 		<menuitem id="menu_consignment_order"

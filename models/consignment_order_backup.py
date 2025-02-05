@@ -14,31 +14,31 @@ class ConsignmentOrder(models.Model):
     _description = 'Consignment Order'
     _name = 'consignment.order'
 
-    name = fields.Char(string='Nombre', tracking=True)
-    date = fields.Date('Fecha', tracking=True, required=True)
-    partner_id = fields.Many2one('res.partner', string='Cliente', tracking=True)
-    warehouse_id = fields.Many2one('stock.warehouse', string='Almacen', tracking=True)
+    name = fields.Char(string='Name', tracking=True)
+    date = fields.Date('Date', tracking=True, required=True)
+    partner_id = fields.Many2one('res.partner', string='Customer', tracking=True)
+    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse', tracking=True)
     sale_order_ids = fields.Many2many('sale.order', 'rel_consignment_sale', 'consignment_order_id', 'sale_order_id',
-                                      string='Ordenes', tracking=True, copy="False")
-    user_id = fields.Many2one('res.users', string='Responsable', default=lambda self: self.env.user)
-    company_id = fields.Many2one('res.company', string='Compañia', store=True, readonly=True,
+                                      string='Sale Order', tracking=True, copy="False")
+    user_id = fields.Many2one('res.users', string='Responsible', default=lambda self: self.env.user)
+    company_id = fields.Many2one('res.company', string='Company', store=True, readonly=True,
                                  default=lambda self: self.env.user.company_id)
     state = fields.Selection([('quotation', 'Quotation'), ('waiting', 'Waiting Approval'), ('approved', 'Approved'),
                               ('consignment', 'Consignment'), ('sale', 'Sale Order'), ('done', 'Done'),
                               ('cancel', 'Cancel')], default='quotation', tracking=True)
 
-    line_ids = fields.One2many('consignment.order.line', 'consignment_order_id', string="Líneas")
+    line_ids = fields.One2many('consignment.order.line', 'consignment_order_id', string="Lines")
 
     no_of_pick = fields.Float(string='No of Pick', compute='compute_no_of_move')
     no_of_move = fields.Float(string='No of Move', compute='compute_no_of_move')
     no_of_move_line = fields.Float(string='No of Move Line', compute='compute_no_of_move')
     no_of_so = fields.Float(string='No of Move Line', compute='compute_no_of_move')
     is_so_create = fields.Boolean(string="Is Sale Order Created")
-    route_id = fields.Many2one('stock.route', 'Ruta', required=True, ondelete='cascade')
+    route_id = fields.Many2one('stock.route', 'Route', required=True, ondelete='cascade')
     #location_id = fields.Many2one('stock.location', 'Ubicación de origen', required=True)
     #location_dest_id = fields.Many2one('stock.location', 'Ubicación de destino', required=True)
 
-    sale_order_id = fields.Many2one('sale.order', string='Orden existente', tracking=True)
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order', tracking=True)
 
     @api.onchange('sale_order_id')
     def _onchange_sale_order_id(self):
@@ -63,9 +63,99 @@ class ConsignmentOrder(models.Model):
         for rec in self:
             rec.state = 'cancel'
 
+    """
     def action_done(self):
         for rec in self:
             rec.state = 'done'
+            for line_id in rec.line_ids:
+                line_id.stock_move_id._do_unreserve()
+                line_id.stock_move_id._action_done()
+    """
+
+    def action_done(self):
+        for rec in self:
+            rec.state = 'done'
+
+    """
+    def action_return(self):
+        for rec in self:
+            for line_id in rec.line_ids:
+                move_vals = self._prepare_return_move(line_id)
+                stock_move = self.env['stock.move'].create(move_vals)
+                if stock_move:
+
+                    stock_move._action_confirm()
+                    stock_move._do_unreserve()
+                    stock_move._action_assign()
+                    stock_move._action_done()
+
+                    line_id.stock_move_id._do_unreserve()
+                    line_id.stock_move_id._action_done()
+                    rec.state = 'done'
+
+    def _prepare_return_move(self, line_id):
+        #location_id = self.warehouse_id.consignment_location_id.id
+        #location_dest_id = self.env.ref('stock.stock_location_stock').id
+        
+        #location_id = self.location_dest_id.id
+        #location_dest_id = self.location_id.id
+
+        first_rule = self.route_id.rule_ids[:1]
+
+        if not first_rule:
+            raise ValidationError(_("No se encontró ninguna regla en la ruta seleccionada."))
+
+        location_id = first_rule.location_dest_id.id
+        location_dest_id = first_rule.location_src_id.id
+
+        move_lines = []
+        if line_id.show_details:
+            for line_lot in line_id.consignment_lot_ids:
+                qty = line_lot.quantity - line_lot.qty_on_hand
+                vals = {
+                    'product_id': line_id.product_id.id,
+                    'lot_id': line_lot.lot_id.id,
+                    'quantity': qty,  # bypass reservation here
+                    'product_uom_id': line_lot.uom_id.id,
+                    'quantity': qty,
+                    'origin': self.name,
+                    'reference': self.name,
+                    'location_id': location_id,
+                    'location_dest_id': location_dest_id,
+                    'owner_id': self.partner_id.id,
+                }
+                move_lines.append((0, 0, vals))
+        else:
+            qty = line_id.quantity - line_id.sale_qty
+            vals = {
+                'product_id': line_id.product_id.id,
+                'quantity': qty,  # bypass reservation here
+                'product_uom_id': line_id.product_id.uom_id.id,
+                'quantity': qty,
+                'origin': self.name,
+                'location_id': location_id,
+                'location_dest_id': location_dest_id,
+                'owner_id': self.partner_id.id,
+                'reference': self.name,
+            }
+            move_lines.append((0, 0, vals))
+        qty = line_id.quantity - line_id.sale_qty
+        move_vals = {
+            'product_id': line_id.product_id.id,
+            'product_uom': line_id.product_id.uom_id.id,
+            'quantity': qty,
+            'date': self.date,
+            'name': self.name,
+            'origin': self.name,
+            'move_line_ids': move_lines,
+            'reference': self.name,
+            'company_id': self.company_id.id,
+            'restrict_partner_id': self.partner_id.id,
+            'location_id': location_id,
+            'location_dest_id': location_dest_id,
+        }
+        return move_vals
+    """
 
     def action_return(self):
         for rec in self:
@@ -128,6 +218,21 @@ class ConsignmentOrder(models.Model):
             ),
         }
 
+    #Método de momento no se usa ya que se cambio la logica para crear un pick directamente
+    
+    """
+    def action_unreserved(self):
+        for line_id in self.line_ids:
+            line_id.stock_move_id._do_unreserve()
+            line_id.stock_move_id.state = 'draft'
+            line_id.stock_move_id.name = ''
+            line_id.stock_move_id.origin = ''
+            line_id.stock_move_id.reference = ''
+            line_id.stock_move_id = False
+            line_id.stock_move_id.state = 'approved'
+        self.state = 'approved'
+    """
+
     def compute_no_of_move(self):
         for rec in self:
             pick_ids = rec.env['stock.picking'].search([('origin', '=', self.name)])
@@ -154,6 +259,40 @@ class ConsignmentOrder(models.Model):
             'context': {'create': 0, 'edit': 0},
             'type': 'ir.actions.act_window',
         }
+
+    """
+    def action_view_stock_move_line(self):
+        xml_id = 'stock.view_move_line_tree'
+        tree_view_id = self.env.ref(xml_id).id
+        xml_id = 'stock.view_move_line_form'
+        form_view_id = self.env.ref(xml_id).id
+        return {
+            'name': _('Traceability'),
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'views': [(tree_view_id, 'tree'), (form_view_id, 'form')],
+            'res_model': 'stock.move.line',
+            'domain': [('origin', '=', self.name)],
+            'context': {'create': 0, 'edit': 0},
+            'type': 'ir.actions.act_window',
+        }
+
+    def action_view_stock_move(self):
+        xml_id = 'stock.view_move_tree'
+        tree_view_id = self.env.ref(xml_id).id
+        xml_id = 'stock.view_move_form'
+        form_view_id = self.env.ref(xml_id).id
+        return {
+            'name': _('Stock Move'),
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'views': [(tree_view_id, 'tree'), (form_view_id, 'form')],
+            'res_model': 'stock.move',
+            'domain': [('origin', '=', self.name)],
+            'context': {'create': 0, 'edit': 0},
+            'type': 'ir.actions.act_window',
+        }
+    """
 
     def action_view_stock_picking(self):
         xml_id = 'stock.vpicktree'
@@ -189,7 +328,88 @@ class ConsignmentOrder(models.Model):
 
         self.state = 'approved'
 
+    """
     def action_confirm(self):
+        for line_id in self.line_ids:
+            move_vals = self._prepare_move(line_id)
+            stock_move = self.env['stock.move'].create(move_vals)
+            if stock_move:
+                line_id.stock_move_id = stock_move
+                stock_move._action_confirm()
+        self.state = 'consignment'
+    
+
+    def _prepare_move(self, line_id):
+        #location_id = self.env.ref('stock.stock_location_stock').id
+        #location_dest_id = self.warehouse_id.consignment_location_id.id or self.warehouse_id.id
+
+        #location_id = self.location_id.id
+        #location_dest_id = self.location_dest_id.id
+
+        first_rule = self.route_id.rule_ids[:1]
+
+        if not first_rule:
+            raise ValidationError(_("No se encontró ninguna regla en la ruta seleccionada."))
+
+        location_id = first_rule.location_src_id.id
+        location_dest_id = first_rule.location_dest_id.id
+
+        move_lines = []
+        if line_id.show_details:
+            for line_lot in line_id.consignment_lot_ids:
+                vals = {
+                    'product_id': line_id.product_id.id,
+                    'lot_id': line_lot.lot_id.id,
+                    'quantity': line_lot.quantity,  # bypass reservation here
+                    'product_uom_id': line_lot.uom_id.id,
+                    'quantity': line_lot.quantity,
+                    'origin': self.name,
+                    'reference': self.name,
+                    'location_id': location_id,
+                    'location_dest_id': location_dest_id,
+                    'owner_id': self.partner_id.id,
+                }
+                move_lines.append((0, 0, vals))
+        else:
+            vals = {
+                'product_id': line_id.product_id.id,
+                'quantity': line_id.quantity,  # bypass reservation here
+                'product_uom_id': line_id.product_id.uom_id.id,
+                'quantity': line_id.quantity,
+                'origin': self.name,
+                'location_id': location_id,
+                'location_dest_id': location_dest_id,
+                'owner_id': self.partner_id.id,
+                'reference': self.name,
+            }
+            move_lines.append((0, 0, vals))
+
+        move_vals = {
+            'product_id': line_id.product_id.id,
+            'product_uom': line_id.product_id.uom_id.id,
+            'product_uom_qty': line_id.quantity,
+            'date': self.date,
+            'name': self.name,
+            'origin': self.name,
+            'move_line_ids': move_lines,
+            'reference': self.name,
+            'company_id': self.company_id.id,
+            'restrict_partner_id': self.partner_id.id,
+            'location_id': location_id,
+            'location_dest_id': location_dest_id,
+        }
+        return move_vals
+    
+    """
+
+    def action_confirm(self):
+        """
+        pick_vals = self._prepare_picking()
+        stock_picking = self.env['stock.picking'].create(pick_vals)
+        if stock_picking:
+            self._prepare_picking_lines(stock_picking)
+            stock_picking.action_confirm()
+        """
         for rec in self:
             rec.state = 'consignment'
 
@@ -286,7 +506,7 @@ class ConsignmentOrderLine(models.Model):
     _name = "consignment.order.line"
     _rec_name = 'product_id'
 
-    consignment_order_id = fields.Many2one('consignment.order', 'Orden de consignacion')
+    consignment_order_id = fields.Many2one('consignment.order', 'Consignment Order')
     product_tmpl_id = fields.Many2one('product.template', 'Product', related='product_id.product_tmpl_id', store=True)
     product_id = fields.Many2one('product.product', 'Product')
     stock_move_id = fields.Many2one('stock.move', 'Stock Move')
@@ -338,6 +558,38 @@ class ConsignmentOrderLine(models.Model):
                 self.env.context,
             ),
         }
+
+    """
+    @api.model
+    def create(self, vals):
+        if vals.get('product_id'):
+            product = self.env['product.product'].browse(vals['product_id'])
+            vals['product_price'] = product.lst_price
+        return super(ConsignmentOrderLine, self).create(vals)
+    """
+
+    """
+    @api.model
+    def create(self, vals):
+        if vals.get('product_id'):
+            product = self.env['product.product'].browse(vals['product_id'])
+            consignment_order = self.env['consignment.order'].browse(vals.get('consignment_order_id'))
+
+            if not consignment_order:
+                raise ValidationError(_("No se encontró una orden de consignación válida."))
+
+            partner = consignment_order.partner_id
+
+            if partner.property_product_pricelist:
+                pricelist = partner.property_product_pricelist
+                # Con _get_product_price se obtiene el precio de la tarifa
+                price = pricelist._get_product_price(product, 1.0, partner)
+                vals['product_price'] = price
+            else:
+                vals['product_price'] = product.lst_price
+
+        return super(ConsignmentOrderLine, self).create(vals)
+    """
 
     @api.model
     def create(self, vals):
@@ -406,13 +658,6 @@ class ConsignmentOrderLine(models.Model):
         for line in self:
             total_invoiced = 0.0
 
-            for k in line.consignment_order_id.sale_order_ids:
-                for move in k.invoice_ids:
-                    for j in move.invoice_line_ids:
-                        if j.product_id == line.product_id:
-                            total_invoiced += j.price_total
-
-            """
             sale_order = self.env['sale.order'].search([
                 ('origin', '=', line.consignment_order_id.name),
                 ('state', '=', 'sale')
@@ -431,7 +676,6 @@ class ConsignmentOrderLine(models.Model):
                             for i in move.invoice_line_ids:
                                 if i.product_id == line.product_id:
                                     total_invoiced += i.price_total
-            """
 
             line.price_invoiced = total_invoiced
 
@@ -452,3 +696,31 @@ class ConsignmentOrderLot(models.Model):
         for rec in self:
             if rec.product_id:
                 rec.uom_id = rec.product_id.uom_id
+
+"""
+#ANADIR FUNCIONALIDAD AL BUSCAR VARIANTES
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
+    #@api.model
+    #def name_search(self, name, args=None, operator='ilike', limit=100):
+    #    if name:
+    #        products = self.search([('default_code', operator, name)] + args, limit=limit)
+    #        if products:
+    #            product_tmpl_ids = products.mapped('product_tmpl_id')
+    #            variants = self.search([('product_tmpl_id', 'in', product_tmpl_ids.ids)], limit=limit)
+    #            return variants.name_get()
+    #    return super(ProductProduct, self).name_search(name, args=args, operator=operator, limit=limit)
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        if args is None:
+            args = []
+        if name:
+            products = self.search([('default_code', operator, name)] + args, limit=limit)
+            if products:
+                product_tmpl_ids = products.mapped('product_tmpl_id')
+                variants = self.search([('product_tmpl_id', 'in', product_tmpl_ids.ids)], limit=limit)
+                return variants.name_get()
+        return super(ProductProduct, self).name_search(name, args=args, operator=operator, limit=limit)
+"""
