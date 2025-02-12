@@ -10,6 +10,23 @@ class SaleOrderInherit(models.Model):
     consignment_order_id = fields.Many2one('consignment.order', 'Consignment Order')
     route_id = fields.Many2one('stock.route', 'Route')
 
+    is_locked_by_consignment = fields.Boolean(
+        string="Bloqueado por Consignación", 
+        compute="_compute_locked_by_consignment",
+        store=True
+    )
+
+    @api.depends('consignment_order_ids')
+    def _compute_locked_by_consignment(self):
+        for order in self:
+            order.is_locked_by_consignment = bool(order.consignment_order_ids)
+
+    consignment_order_ids = fields.One2many(
+        'consignment.order', 
+        'sale_order_id', 
+        string='Órdenes de Consignación'
+    )
+
     def action_view_stock_move_line(self):
         move_line_ids = self.env['stock.move.line'].search([('origin', '=', self.name)])
         xml_id = 'stock.view_move_line_tree'

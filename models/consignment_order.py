@@ -44,11 +44,28 @@ class ConsignmentOrder(models.Model):
         domain="[('state', 'in', ['draft','sent'])]",
         tracking=True)
 
+    _sql_constraints = [
+        ('unique_sale_order', 'unique(sale_order_id)', 'La orden de venta ya está asignada a otra orden de consignación.')
+    ]
+
+    @api.constrains('sale_order_id')
+    def _check_unique_sale_order(self):
+        for record in self:
+            if record.sale_order_id:
+                existing = self.search([
+                    ('sale_order_id', '=', record.sale_order_id.id),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if existing:
+                    raise ValidationError("Esta orden de venta ya está asignada a otra orden de consignación.")
+
     @api.onchange('sale_order_id')
     def _onchange_sale_order_id(self):
         if self.sale_order_id:
 
             self.partner_id = self.sale_order_id.partner_id.id
+
+            self.sale_order_id.is_locked_by_consignment = True 
 
             # Limpiar líneas existentes
             self.line_ids = [(5, 0, 0)]

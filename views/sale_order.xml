@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="sale_consignment_order_view_form" model="ir.ui.view">
+			<field name="name">sale.order.form</field>
+			<field name="model">sale.order</field>
+			<field name="inherit_id" ref="sale.view_order_form" />
+			<field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="is_locked_by_consignment" invisible="1"/>
+                </field>
+				<xpath expr="//field[@name='partner_id']" position="attributes">
+					<attribute name="readonly">is_locked_by_consignment</attribute>
+				</xpath>
+				<xpath expr="//field[@name='order_line']" position="attributes">
+					<attribute name="readonly">is_locked_by_consignment</attribute>
+				</xpath>
+			</field>
+    </record>
+
     <record id="sale_consignment_order_line_view_form" model="ir.ui.view">
 			<field name="name">sale.order.line.form</field>
 			<field name="model">sale.order.line</field>
@@ -34,6 +51,6 @@
                     </footer>
 				</form>
 			</field>
-    	</record>
+    </record>
 
 </odoo>

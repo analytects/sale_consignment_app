@@ -127,7 +127,7 @@
 							<group>
 								<field name="date" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')"/>
 								<field name="sale_order_ids" widget="many2many_tags" readonly="1" force_save="True"/>
-								<field name="sale_order_id" options="{'no_create': True}"/>
+								<field name="sale_order_id" options="{'no_create': True}" readonly="state != 'quotation'"/>
 								<field name="is_so_create" invisible="1"/>
 							</group>
 						</group>
