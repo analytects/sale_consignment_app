@@ -3,6 +3,22 @@ from datetime import datetime
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError 
 
+class StockQuant(models.Model):
+    _inherit = 'stock.quant'
+
+    stored_inventory_quantity = fields.Float(
+        string='Stored Inventory Quantity',
+        store=True,
+        compute='_compute_stored_inventory_quantity',
+        digits='Product Unit of Measure',
+        help='Campo almacenado que refleja el valor de inventory_quantity_auto_apply'
+    )
+
+    @api.depends('inventory_quantity_auto_apply')
+    def _compute_stored_inventory_quantity(self):
+        for record in self:
+            record.stored_inventory_quantity = record.inventory_quantity_auto_apply
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
@@ -263,12 +279,26 @@ class ConsignmentOrder(models.Model):
         for line_id in self.line_ids:
 
             #Buscar ubicaciones con stock
+            """
             quant_domain = [
                 ('product_id', '=', line_id.product_id.id),
                 ('location_id', 'child_of', stock_picking.location_id.id),
                 ('inventory_quantity_auto_apply', '>=', line_id.quantity)
             ]
-            stock_quant = self.env['stock.quant'].search(quant_domain, limit=1)
+            """
+            quant_domain = [
+                ('product_id', '=', line_id.product_id.id),
+                ('location_id', 'child_of', stock_picking.location_id.id),
+                ('stored_inventory_quantity', '>=', line_id.quantity),
+                ('on_hand', '=', True),
+                ('location_id.usage', '=', 'internal')
+            ]
+            #stock_quant = self.env['stock.quant'].search(quant_domain, limit=1)
+
+            stock_quants = self.env['stock.quant'].search(quant_domain)
+            stock_quants = sorted(stock_quants, key=lambda q: len(q.location_id.child_ids))
+            stock_quant = stock_quants[0] if stock_quants else None
+
             if stock_quant:
                 location_temp = stock_quant.location_id.id
             else:
