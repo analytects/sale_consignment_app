@@ -3,6 +3,15 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError 
 
+class StockMove(models.Model):
+    _inherit = 'stock.move'
+
+    is_consignment = fields.Boolean(
+        string="Es Consignación",
+        related='picking_id.is_consignment',
+        store=True
+    )
+
 class StockPicking(models.Model):
     _inherit = "stock.picking"
 

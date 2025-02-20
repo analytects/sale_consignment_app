@@ -98,6 +98,10 @@ class ConsignmentOrder(models.Model):
 
     def action_cancel(self):
         for rec in self:
+
+            if rec.sale_order_id:
+                rec.sale_order_id.action_cancel()
+
             rec.state = 'cancel'
 
     def action_done(self):
@@ -217,6 +221,9 @@ class ConsignmentOrder(models.Model):
         self.state = 'waiting'
 
     def action_approval(self):
+
+        if self.sale_order_id:
+            self.sale_order_id.action_cancel()
 
         pick_vals = self._prepare_picking()
         stock_picking = self.env['stock.picking'].create(pick_vals)

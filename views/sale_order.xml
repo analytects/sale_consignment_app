@@ -10,10 +10,10 @@
                     <field name="is_locked_by_consignment" invisible="1"/>
                 </field>
 				<xpath expr="//field[@name='partner_id']" position="attributes">
-					<attribute name="readonly">is_locked_by_consignment</attribute>
+					<attribute name="readonly">is_locked_by_consignment or is_locked_by_consignment_order</attribute>
 				</xpath>
 				<xpath expr="//field[@name='order_line']" position="attributes">
-					<attribute name="readonly">is_locked_by_consignment</attribute>
+					<attribute name="readonly">is_locked_by_consignment or is_locked_by_consignment_order</attribute>
 				</xpath>
 			</field>
     </record>

@@ -16,6 +16,17 @@ class SaleOrderInherit(models.Model):
         store=True
     )
 
+    is_locked_by_consignment_order = fields.Boolean(
+        string="Bloqueado por Consignación", 
+        compute="_compute_locked_by_consignment_order",
+        store=True
+    )
+
+    @api.depends('consignment_order_id')
+    def _compute_locked_by_consignment_order(self):
+        for order in self:
+            order.is_locked_by_consignment_order = bool(order.consignment_order_id)
+
     @api.depends('consignment_order_ids')
     def _compute_locked_by_consignment(self):
         for order in self:
