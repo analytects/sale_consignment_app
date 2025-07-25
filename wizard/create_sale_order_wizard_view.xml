@@ -6,10 +6,6 @@
             <field name="model">create.sale.order.wizard</field>
             <field name="arch" type="xml">
                 <form>
-                    <header>
-                        <button name="action_create_sale_order" string="Create Sale Order" type="object" class="oe_highlight"/>
-                        <button special="cancel" class="oe_highlight" string="Cancel"/>
-                    </header>
                     <group>
                         <group>
                             <field name="consignment_order_id" readonly="1" force_save="True"/>
@@ -24,6 +20,7 @@
 										<field name="quantity" readonly="1" force_save="True"/>
                                         <field name="unit_price"/>
                                         <field name="sale_qty" readonly="show_details" force_save="True"/>
+                                        <field name="remain_qty" />
                                         <field name="product_price" readonly="1" force_save="True"/>
 										<field name="stock_move_id" readonly="1" force_save="True"/>
 										<field name="show_details" column_invisible="1"/>
@@ -39,6 +36,10 @@
 						</notebook>
                     <newline/>
                     <separator colspan="6"/>
+                    <footer>
+                        <button name="action_create_sale_order" string="Create Sale Order" type="object" class="oe_highlight"/>
+                        <button special="cancel" class="oe_highlight" string="Cancel"/>
+                    </footer>
 
                 </form>
             </field>

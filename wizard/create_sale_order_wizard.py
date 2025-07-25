@@ -31,7 +31,7 @@ class CreateSaleOrderWizard(models.TransientModel):
                     if con_line.sale_qty > con_line.quantity:
                         raise ValidationError('Total Sale Qty Must be Less Then Demand Quantity')
                 sale_order_line_id = sale_order_id.order_line.create({'product_id': line_id.product_id.id,
-                                                                      'product_uom_qty': line_id.sale_qty,
+                                                                      'product_uom_qty': line_id.remain_qty,
                                                                       'product_uom': line_id.product_id.uom_id.id,
                                                                       'stock_move_id': line_id.stock_move_id.id,
                                                                       'show_details': line_id.show_details,
@@ -86,6 +86,7 @@ class CreateSaleOrderWizard(models.TransientModel):
                 'stock_move_id': line_id.stock_move_id.id,
                 'unit_price': line_id.product_id.lst_price or 1,
                 'quantity': line_id.quantity,
+                'remain_qty': line_id.remain_qty,
                 'product_price': line_id.product_price,
                 'show_details': line_id.show_details,
                 'lot_line_ids': lot_vals,
@@ -110,6 +111,7 @@ class CreateSaleOrderLineWizard(models.TransientModel):
     quantity = fields.Float(string="Demand")
     unit_price = fields.Float(string="Unit Price")
     sale_qty = fields.Float(string="Sale Quantity", compute='compute_sale_qty', store=True)
+    remain_qty = fields.Float(string="Remaining Qty")
     show_details = fields.Boolean(string='Show Lot Details')
     lot_line_ids = fields.One2many('create.sale.order.lot.wizard', 'line_id')
 

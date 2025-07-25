@@ -32,3 +32,15 @@ class StockPicking(models.Model):
 
         return res
     """
+    @api.model_create_multi
+    def create(self, vals):
+        res = super(StockPicking, self).create(vals)
+        for val in vals:
+            if 'origin' in val:
+                so_id = self.env['sale.order'].search([
+                    ('company_id', '=', val['company_id']),
+                    ('name', '=', val['origin']),
+                ], limit=1)
+                if so_id.consignment_order_id:
+                    raise UserError(so_id)
+        return res

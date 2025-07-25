@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 class SaleOrderInherit(models.Model):
     _inherit = "sale.order"
@@ -54,6 +54,47 @@ class SaleOrderInherit(models.Model):
             'context': {'create': 0, 'edit': 0},
             'type': 'ir.actions.act_window',
         }
+    def action_convert_to_consignment(self):
+        if not self.partner_id.is_consignment:
+            raise UserError(_('Partner "{0}" is not allowed to create consignments'.format(self.partner_id.name)))
+        # convert to consignment.order
+        lines = []
+        for line in self.order_line:
+                lines.append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'quantity': line.product_uom_qty,
+                    'product_price': line.price_unit_discount if self.company_id.add_price_discount else 0,
+                }))
+        vals = {
+            'date': fields.Date.context_today(self),
+            'partner_id': self.partner_id.id,
+            'warehouse_id': self.warehouse_id.id,
+            'line_ids': lines,
+            'route_id': 15,
+            'sale_order_id': self.id,
+        }
+        consignment_id = self.env['consignment.order'].create(vals)
+        self.consignment_order_id = consignment_id
+        self.action_cancel()
+        return {
+            'name': _('Consignments'),
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'res_model': 'consignment.order',
+            'domain': [('id', '=', consignment_id.id)],
+            'type': 'ir.actions.act_window',
+        }
+    
+    # def action_confirm(self):
+    #     res = super(SaleOrderInherit, self).action_confirm()
+    #     picking_ids = self.env['stock.picking'].search([
+    #         ('sale_id', '=', self.id),
+    #         ('state', '=', 'assigned')
+    #     ])
+    #     for picking_id in picking_ids:
+    #         if picking_id.state == 'assigned':
+    #             picking_id.button_validate()
+    #     return res
 
 class SaleOrderLineInherit(models.Model):
     _inherit = "sale.order.line"
@@ -81,7 +122,7 @@ class SaleOrderLineInherit(models.Model):
             'context': dict(
                 self.env.context,
             ),
-        }
+        }                
 
 class SaleOrderLineLotInherit(models.Model):
     _name = "sale.order.line.lot"

@@ -162,8 +162,8 @@ class ConsignmentOrder(models.Model):
             'res_model': 'create.sale.order.wizard',
             'views': [(view.id, 'form')],
             'view_id': view.id,
-            'target': 'current',
-            'flags': {'form': {'action_buttons': True}},
+            'target': 'new',
+            'flags': {'form': {'action_buttons': False}},
             'context': dict(
                 self.env.context,
             ),
@@ -406,6 +406,8 @@ class ConsignmentOrderLine(models.Model):
 
             if not partner:
                 raise UserError(_("No se encontró un contacto válido para la orden de consignación."))
+            if consignment_order.company_id.add_price_discount:
+                return super(ConsignmentOrderLine, self).create(vals)
 
             vals['product_price'] = self._get_product_price(product, partner)
 

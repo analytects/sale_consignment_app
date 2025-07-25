@@ -8,7 +8,7 @@
     'description': "Sale Consignment App",
     "license" : "OPL-1",
     'depends': [
-        'stock','sale_management','account'
+        'stock', 'sale_management', 'account', 'cfodigital_line_price_discount'
     ],
     'data': [
             'security/consignment_security.xml',
@@ -24,7 +24,7 @@
             'wizard/create_sale_order_wizard_view.xml',
             'wizard/sale_consignment_report_wizard_view.xml',
             'report/sale_consignment_report.xml',
-
+            'report/sale_consignment.xml',
 
     ],
     'demo': [ ],
