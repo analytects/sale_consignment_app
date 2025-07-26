@@ -59,6 +59,10 @@ class ConsignmentOrder(models.Model):
         string='Orden existente', 
         domain="[('state', 'in', ['draft','sent'])]",
         tracking=True)
+    
+    all_remain_qty_is_zero = fields.Boolean(
+        compute='_compute_all_remain_qty_is_zero'
+    )
 
     _sql_constraints = [
         ('unique_sale_order', 'unique(sale_order_id)', 'La orden de venta ya está asignada a otra orden de consignación.')
@@ -162,7 +166,7 @@ class ConsignmentOrder(models.Model):
             'res_model': 'create.sale.order.wizard',
             'views': [(view.id, 'form')],
             'view_id': view.id,
-            'target': 'current',
+            'target': 'new',
             'flags': {'form': {'action_buttons': True}},
             'context': dict(
                 self.env.context,
@@ -340,6 +344,14 @@ class ConsignmentOrder(models.Model):
         #stock_picking.write({'move_line_ids': move_lines})
         stock_picking.write({'move_ids_without_package': move_lines})
 
+    @api.depends('line_ids')
+    def _compute_all_remain_qty_is_zero(self):
+        for rec in self:
+            rec.all_remain_qty_is_zero = True
+            for line_id in rec.line_ids:
+                if line_id.remain_qty != 0:
+                    rec.all_remain_qty_is_zero = False
+
 class ConsignmentOrderLine(models.Model):
     _name = "consignment.order.line"
     _rec_name = 'product_id'
@@ -406,6 +418,8 @@ class ConsignmentOrderLine(models.Model):
 
             if not partner:
                 raise UserError(_("No se encontró un contacto válido para la orden de consignación."))
+            if consignment_order.company_id.add_price_discount:
+                return super(ConsignmentOrderLine, self).create(vals)
 
             vals['product_price'] = self._get_product_price(product, partner)
 

@@ -49,11 +49,11 @@
 								invisible="state in ('waiting','quotation','approved','sale','done','cancel')"
 								class="oe_highlight" />
 						-->
-						
+						<field name="all_remain_qty_is_zero" invisible="1" />
 						<button name="action_create_sale_order"
 								string="Create Sale Order"
 								type="object"
-								invisible = "state not in ('consignment', 'sale')"
+								invisible = "state not in ('consignment', 'sale') or all_remain_qty_is_zero"
 								class="oe_highlight" />
 						<!--
 						<button name="action_return"
@@ -75,8 +75,8 @@
 						<field name="state" widget="statusbar" readonly="1"/>
 					</header>
 					<sheet>
-						<div class="oe_button_box">
-							 <button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_picking" invisible="state in ('quotation', 'waiting','cancel')">
+						<div name="button_box" class="oe_button_box">
+							<button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_picking" invisible="state in ('quotation', 'waiting','cancel')">
                         		<div class="o_form_field o_stat_info">
 									<span class="o_stat_value">
 										<field name="no_of_pick"/>
@@ -84,26 +84,6 @@
 									<span class="o_stat_text">Transferencias</span>
 								</div>
 							</button>
-
-							<!--
-							 <button type="object" class="oe_stat_button" icon="fa-arrow-up" name="action_view_stock_move" invisible="state in ('quotation', 'waiting', 'approved','cancel')">
-                        		<div class="o_form_field o_stat_info">
-									<span class="o_stat_value">
-										<field name="no_of_move"/>
-									</span>
-									<span class="o_stat_text">Movimientos de producto</span>
-								</div>
-							</button>
-							<button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_move_line" invisible="state in ('quotation', 'waiting', 'approved','cancel')">
-                        		<div class="o_form_field o_stat_info">
-									<span class="o_stat_value">
-										<field name="no_of_move_line"/>
-									</span>
-									<span class="o_stat_text">Trazabilidad</span>
-								</div>
-							</button>
-							-->
-
 							<button type="object" class="oe_stat_button" icon="fa-truck" name="action_view_sale_order" invisible="not is_so_create">
                         		<div class="o_form_field o_stat_info">
 									<span class="o_stat_value">
@@ -120,7 +100,7 @@
 						</div>
 						<group>
 							<group>
-								<field name="partner_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1"/>
+								<field name="partner_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1" domain="[('is_consignment', '=', True)]" />
 								<field name="warehouse_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" placeholder="Selecciona almacén de consignación" required="1"/>
 								<field name="route_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1"/>
 							</group>
@@ -267,6 +247,15 @@
 				</form>
 			</field>
     	</record>
-
+		<record id="action_print_consignment" model="ir.actions.report">
+			<field name="name">Consignación</field>
+			<field name="model">consignment.order</field>
+			<field name="report_type">qweb-pdf</field>
+			<field name="report_name">sale_consignment_app.sale_consignment_report_template_1</field>
+			<field name="report_file">sale_consignment_app.sale_consignment_report_template_1</field>
+			<field name="print_report_name">'Consignación - %s' % (object.name)</field>
+			<field name="binding_model_id" ref="model_consignment_order"/>
+			<field name="binding_type">report</field>
+		</record>
 	</data>
 </odoo>

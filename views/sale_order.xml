@@ -10,6 +10,12 @@
                     <field name="is_locked_by_consignment" invisible="1"/>
 					<field name="is_locked_by_consignment_order" invisible="1"/>
                 </field>
+				<button name="action_draft" position="after">
+					<button name="action_convert_to_consignment"
+							type="object"
+							string="Convert to consignment"
+							invisible="state != 'draft'" />
+				</button>
 				<xpath expr="//field[@name='partner_id']" position="attributes">
 					<attribute name="readonly">is_locked_by_consignment or is_locked_by_consignment_order</attribute>
 				</xpath>
