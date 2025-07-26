@@ -59,6 +59,10 @@ class ConsignmentOrder(models.Model):
         string='Orden existente', 
         domain="[('state', 'in', ['draft','sent'])]",
         tracking=True)
+    
+    all_remain_qty_is_zero = fields.Boolean(
+        compute='_compute_all_remain_qty_is_zero'
+    )
 
     _sql_constraints = [
         ('unique_sale_order', 'unique(sale_order_id)', 'La orden de venta ya está asignada a otra orden de consignación.')
@@ -163,7 +167,7 @@ class ConsignmentOrder(models.Model):
             'views': [(view.id, 'form')],
             'view_id': view.id,
             'target': 'new',
-            'flags': {'form': {'action_buttons': False}},
+            'flags': {'form': {'action_buttons': True}},
             'context': dict(
                 self.env.context,
             ),
@@ -339,6 +343,14 @@ class ConsignmentOrder(models.Model):
         
         #stock_picking.write({'move_line_ids': move_lines})
         stock_picking.write({'move_ids_without_package': move_lines})
+
+    @api.depends('line_ids')
+    def _compute_all_remain_qty_is_zero(self):
+        for rec in self:
+            rec.all_remain_qty_is_zero = True
+            for line_id in rec.line_ids:
+                if line_id.remain_qty != 0:
+                    rec.all_remain_qty_is_zero = False
 
 class ConsignmentOrderLine(models.Model):
     _name = "consignment.order.line"

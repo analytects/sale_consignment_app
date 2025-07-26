@@ -12,9 +12,9 @@ class CreateSaleOrderWizard(models.TransientModel):
 
     def action_create_sale_order(self):
         for rec in self:
-            for line_id in rec.line_ids:
-                if line_id.sale_qty <= 0:
-                    raise ValidationError('Sale quantity must be greater than zero quantity')
+            # for line_id in rec.line_ids:
+            #     if line_id.sale_qty <= 0:
+            #         raise ValidationError('Sale quantity must be greater than zero quantity')
             sale_order_id = self.env['sale.order'].create({
                 'partner_id': rec.consignment_order_id.partner_id.id,
                 'sale_consignment': True,
@@ -27,7 +27,7 @@ class CreateSaleOrderWizard(models.TransientModel):
             for line_id in rec.line_ids:
                 for con_line in rec.consignment_order_id.line_ids.filtered(
                         lambda line: line.product_id == line_id.product_id):
-                    con_line.sale_qty += line_id.sale_qty
+                    con_line.sale_qty += line_id.remain_qty
                     if con_line.sale_qty > con_line.quantity:
                         raise ValidationError('Total Sale Qty Must be Less Then Demand Quantity')
                 sale_order_line_id = sale_order_id.order_line.create({'product_id': line_id.product_id.id,

@@ -49,11 +49,11 @@
 								invisible="state in ('waiting','quotation','approved','sale','done','cancel')"
 								class="oe_highlight" />
 						-->
-						
+						<field name="all_remain_qty_is_zero" invisible="1" />
 						<button name="action_create_sale_order"
 								string="Create Sale Order"
 								type="object"
-								invisible = "state not in ('consignment', 'sale')"
+								invisible = "state not in ('consignment', 'sale') or all_remain_qty_is_zero"
 								class="oe_highlight" />
 						<!--
 						<button name="action_return"

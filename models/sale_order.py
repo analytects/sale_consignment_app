@@ -85,16 +85,16 @@ class SaleOrderInherit(models.Model):
             'type': 'ir.actions.act_window',
         }
     
-    # def action_confirm(self):
-    #     res = super(SaleOrderInherit, self).action_confirm()
-    #     picking_ids = self.env['stock.picking'].search([
-    #         ('sale_id', '=', self.id),
-    #         ('state', '=', 'assigned')
-    #     ])
-    #     for picking_id in picking_ids:
-    #         if picking_id.state == 'assigned':
-    #             picking_id.button_validate()
-    #     return res
+    def action_confirm(self):
+        res = super(SaleOrderInherit, self).action_confirm()
+        picking_ids = self.env['stock.picking'].search([
+            ('sale_id', '=', self.id),
+            ('state', '=', 'assigned')
+        ])
+        for picking_id in picking_ids:
+            if picking_id.state == 'assigned':
+                picking_id.button_validate()
+        return res
 
 class SaleOrderLineInherit(models.Model):
     _inherit = "sale.order.line"
