@@ -92,7 +92,7 @@ class SaleOrderInherit(models.Model):
         picking_ids = self.env['stock.picking'].search([
             ('sale_id', '=', self.id),
             ('state', '=', 'assigned'),
-            ('consignment_order_id', '!=', False)
+            ('sale_id.consignment_order_id', '!=', False)
         ])
         for picking_id in picking_ids:
             if picking_id.state == 'assigned':
