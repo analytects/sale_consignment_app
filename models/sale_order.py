@@ -75,6 +75,8 @@ class SaleOrderInherit(models.Model):
         }
         consignment_id = self.env['consignment.order'].create(vals)
         self.consignment_order_id = consignment_id
+        self.is_consignment = True
+        self.sale_consignment = True
         self.action_cancel()
         return {
             'name': _('Consignments'),
@@ -89,7 +91,8 @@ class SaleOrderInherit(models.Model):
         res = super(SaleOrderInherit, self).action_confirm()
         picking_ids = self.env['stock.picking'].search([
             ('sale_id', '=', self.id),
-            ('state', '=', 'assigned')
+            ('state', '=', 'assigned'),
+            ('consignment_order_id', '!=', False)
         ])
         for picking_id in picking_ids:
             if picking_id.state == 'assigned':
