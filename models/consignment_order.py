@@ -2,6 +2,8 @@
 from datetime import datetime
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError 
+import logging
+_logger = logging.getLogger(__name__)
 
 class StockQuant(models.Model):
     _inherit = 'stock.quant'
@@ -46,6 +48,7 @@ class ConsignmentOrder(models.Model):
     line_ids = fields.One2many('consignment.order.line', 'consignment_order_id', string="Líneas")
 
     no_of_pick = fields.Float(string='No of Pick', compute='compute_no_of_move')
+    no_of_return = fields.Float(string='No of Pick', compute='compute_no_of_move')
     no_of_move = fields.Float(string='No of Move', compute='compute_no_of_move')
     no_of_move_line = fields.Float(string='No of Move Line', compute='compute_no_of_move')
     no_of_so = fields.Float(string='No of Move Line', compute='compute_no_of_move')
@@ -102,11 +105,58 @@ class ConsignmentOrder(models.Model):
 
     def action_cancel(self):
         for rec in self:
-
-            if rec.sale_order_id:
-                rec.sale_order_id.action_cancel()
-
+            # if rec.sale_order_id:
+            #     rec.sale_order_id.action_cancel()
             rec.state = 'cancel'
+            rec.action_create_return()
+    
+    def action_create_return(self):
+        for rec in self:
+            # if rec.state not in ['approved']:
+            #     raise UserError(_('No se puede crear una devolución desde el estado actual de la orden de consignación.'))
+
+            picking_ids = self.env['stock.picking'].search([
+                ('origin', '=', rec.name),
+                ('state', 'in', ['done']) 
+            ])
+            for picking in picking_ids.filtered(lambda p: p.state == 'done'):
+                ctx = dict(self._context or {})
+                ctx.update({
+                    'active_model': 'stock.picking',
+                    'active_ids': [picking.id],
+                    'active_id': picking.id,
+                })
+
+                product_returns = []
+                to_return = rec.get_unsold_products(picking_ids, rec.sale_order_ids.filtered(lambda so: so.state == 'sale'))
+                for move in to_return:
+                    product_returns.append((0, 0, {
+                        'product_id': move.product_id.id,
+                        'quantity': move.quantity,
+                        'move_id': move.id,
+                    }))
+
+                wizard_values = {
+                    'picking_id': picking.id,
+                    'location_id': picking.location_id.id,
+                    'consignment_id': rec.id,
+                    'product_return_moves': product_returns,
+                }
+                wizard = self.env['stock.return.picking'].with_context(ctx).create(wizard_values)
+                new_picking = wizard.create_returns()
+    
+    def get_unsold_products(self, picking_ids, sale_order_ids):
+        self.ensure_one()
+        original_lines = picking_ids[0].move_ids_without_package
+        so_lines = sale_order_ids.mapped('picking_ids.move_ids_without_package')
+        for line in so_lines:
+            product_lines = original_lines.filtered(lambda m: m.product_id == line.product_id)
+            if product_lines:
+                product_lines.quantity -= line.quantity
+        return original_lines.filtered(lambda m: m.quantity > 0)
+                
+        
+
 
     def action_done(self):
         for rec in self:
@@ -176,10 +226,12 @@ class ConsignmentOrder(models.Model):
     def compute_no_of_move(self):
         for rec in self:
             pick_ids = rec.env['stock.picking'].search([('origin', '=', self.name)])
+            return_ids = rec.env['stock.picking'].search([('consignment_id', '=', self.id)])
             move_ids = rec.env['stock.move'].search([('origin', '=', self.name)])
             move_line_ids = rec.env['stock.move.line'].search([('origin', '=', self.name)])
             sale_order_id = rec.env['sale.order'].search([('consignment_order_id', '=', self.id)])
             rec.no_of_pick = len(pick_ids)
+            rec.no_of_return = len(return_ids)
             rec.no_of_move = len(move_ids)
             rec.no_of_move_line = len(move_line_ids)
             rec.no_of_so = len(sale_order_id)
@@ -215,6 +267,8 @@ class ConsignmentOrder(models.Model):
             'context': {'create': 0, 'edit': 0},
             'type': 'ir.actions.act_window',
         }
+    def action_view_return(self):
+        return
 
     @api.model
     def create(self, vals):

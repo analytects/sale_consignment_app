@@ -70,18 +70,26 @@
 						<button name="action_cancel"
 								string="Cancel"
 								type="object"
-								invisible="state in ('sale','consignment','done','cancel')"
+								invisible="state in ('consignment','done','cancel')"
 								class="oe_highlight" />
 						<field name="state" widget="statusbar" readonly="1"/>
 					</header>
 					<sheet>
 						<div name="button_box" class="oe_button_box">
-							<button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_picking" invisible="state in ('quotation', 'waiting','cancel')">
+							<button type="object" class="oe_stat_button" icon="fa-exchange" name="action_view_stock_picking" invisible="no_of_pick == 0">
                         		<div class="o_form_field o_stat_info">
 									<span class="o_stat_value">
 										<field name="no_of_pick"/>
 									</span>
 									<span class="o_stat_text">Transferencias</span>
+								</div>
+							</button>
+							<button type="object" class="oe_stat_button" icon="fa-rotate-left" name="action_view_stock_picking" invisible="no_of_return == 0">
+                        		<div class="o_form_field o_stat_info">
+									<span class="o_stat_value">
+										<field name="no_of_return"/>
+									</span>
+									<span class="o_stat_text">Devoluciones</span>
 								</div>
 							</button>
 							<button type="object" class="oe_stat_button" icon="fa-truck" name="action_view_sale_order" invisible="not is_so_create">
