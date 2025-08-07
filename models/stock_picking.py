@@ -16,6 +16,10 @@ class StockPicking(models.Model):
     _inherit = "stock.picking"
 
     is_consignment = fields.Boolean(string='Is Consignment')
+    consignment_id = fields.Many2one(
+        comodel_name='consignment.order',
+        help='Field used for linking the picking RETURN to a consignment order',
+    )
 
     """
     def button_validate(self):
