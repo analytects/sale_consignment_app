@@ -139,11 +139,11 @@ class ConsignmentOrder(models.Model):
                 wizard_values = {
                     'picking_id': picking.id,
                     'location_id': picking.location_id.id,
-                    'consignment_id': rec.id,
                     'product_return_moves': product_returns,
                 }
                 wizard = self.env['stock.return.picking'].with_context(ctx).create(wizard_values)
                 new_picking = wizard.create_returns()
+                #new_picking.consignment_id = rec.id
     
     def get_unsold_products(self, picking_ids, sale_order_ids):
         self.ensure_one()
