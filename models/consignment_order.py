@@ -139,11 +139,11 @@ class ConsignmentOrder(models.Model):
                 wizard_values = {
                     'picking_id': picking.id,
                     'location_id': picking.location_id.id,
+                    'consignment_id': rec.id,
                     'product_return_moves': product_returns,
                 }
                 wizard = self.env['stock.return.picking'].with_context(ctx).create(wizard_values)
                 new_picking = wizard.create_returns()
-                #new_picking.consignment_id = rec.id
     
     def get_unsold_products(self, picking_ids, sale_order_ids):
         self.ensure_one()
@@ -208,7 +208,12 @@ class ConsignmentOrder(models.Model):
 
     def action_create_sale_order(self):
         view = self.env.ref('sale_consignment_app.create_sale_order_wizard_form_view')
-
+        new_context = {
+            'lang': self.env.context.get('lang'),
+            'tz': self.env.context.get('tz'),
+            'uid': self.env.context.get('uid'),
+            'allowed_company_ids': self.env.context.get('allowed_company_ids'),
+        }
         return {
             'name': _('Create Sale Order Wizard'),
             'type': 'ir.actions.act_window',
@@ -219,7 +224,7 @@ class ConsignmentOrder(models.Model):
             'target': 'new',
             'flags': {'form': {'action_buttons': True}},
             'context': dict(
-                self.env.context,
+                new_context,
             ),
         }
 
