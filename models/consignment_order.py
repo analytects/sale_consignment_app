@@ -208,7 +208,12 @@ class ConsignmentOrder(models.Model):
 
     def action_create_sale_order(self):
         view = self.env.ref('sale_consignment_app.create_sale_order_wizard_form_view')
-
+        new_context = {
+            'lang': self.env.context.get('lang'),
+            'tz': self.env.context.get('tz'),
+            'uid': self.env.context.get('uid'),
+            'allowed_company_ids': self.env.context.get('allowed_company_ids'),
+        }
         return {
             'name': _('Create Sale Order Wizard'),
             'type': 'ir.actions.act_window',
@@ -219,7 +224,7 @@ class ConsignmentOrder(models.Model):
             'target': 'new',
             'flags': {'form': {'action_buttons': True}},
             'context': dict(
-                self.env.context,
+                new_context,
             ),
         }
 
