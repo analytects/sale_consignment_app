@@ -21,11 +21,6 @@ class StockQuant(models.Model):
         for record in self:
             record.stored_inventory_quantity = record.inventory_quantity_auto_apply
 
-class SaleOrder(models.Model):
-    _inherit = 'sale.order'
-
-    is_consignment = fields.Boolean()
-
 class ConsignmentOrder(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'name'
@@ -276,7 +271,15 @@ class ConsignmentOrder(models.Model):
             'type': 'ir.actions.act_window',
         }
     def action_view_return(self):
-        return
+        return {
+            'name': _('Devoluciones'),
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'res_model': 'stock.picking',
+            'domain': [('consignment_id', '=', self.id)],
+            'context': {'create': 0, 'edit': 0},
+            'type': 'ir.actions.act_window',
+        }
 
     @api.model
     def create(self, vals):

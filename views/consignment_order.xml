@@ -84,7 +84,7 @@
 									<span class="o_stat_text">Transferencias</span>
 								</div>
 							</button>
-							<button type="object" class="oe_stat_button" icon="fa-rotate-left" name="action_view_stock_picking" invisible="no_of_return == 0">
+							<button type="object" class="oe_stat_button" icon="fa-rotate-left" name="action_view_return" invisible="no_of_return == 0">
                         		<div class="o_form_field o_stat_info">
 									<span class="o_stat_value">
 										<field name="no_of_return"/>
