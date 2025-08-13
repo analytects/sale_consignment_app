@@ -20,7 +20,7 @@ class CreateSaleOrderWizard(models.TransientModel):
                 'sale_consignment': True,
                 'is_consignment': False,
                 'consignment_order_id': rec.consignment_order_id.id,
-                'warehouse_id': rec.consignment_order_id.warehouse_id.id,
+                'warehouse_id': self.env['stock.warehouse'].search([('is_consignment_warehouse', '=', True)], limit=1).id,
                 'route_id': rec.consignment_order_id.route_id.id,
                 'origin': rec.consignment_order_id.name
             })
