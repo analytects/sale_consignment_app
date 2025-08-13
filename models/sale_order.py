@@ -96,6 +96,7 @@ class SaleOrderInherit(models.Model):
         ])
         for picking_id in picking_ids:
             if picking_id.state == 'assigned':
+                picking_id.location_id = picking_id.sale_id.consignment_order_id.route_id.rule_ids[:1].location_dest_id.id,
                 picking_id.button_validate()
         return res
 
