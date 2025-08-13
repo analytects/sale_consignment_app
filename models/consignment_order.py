@@ -5,22 +5,6 @@ from odoo.exceptions import UserError, ValidationError
 import logging
 _logger = logging.getLogger(__name__)
 
-class StockQuant(models.Model):
-    _inherit = 'stock.quant'
-
-    stored_inventory_quantity = fields.Float(
-        string='Stored Inventory Quantity',
-        store=True,
-        compute='_compute_stored_inventory_quantity',
-        digits='Product Unit of Measure',
-        help='Campo almacenado que refleja el valor de inventory_quantity_auto_apply'
-    )
-
-    @api.depends('inventory_quantity_auto_apply')
-    def _compute_stored_inventory_quantity(self):
-        for record in self:
-            record.stored_inventory_quantity = record.inventory_quantity_auto_apply
-
 class ConsignmentOrder(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'name'
