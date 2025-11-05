@@ -14,7 +14,7 @@ class ConsignmentOrder(models.Model):
     name = fields.Char(string='Nombre', tracking=True)
     date = fields.Date('Fecha', tracking=True, required=True)
     partner_id = fields.Many2one('res.partner', string='Cliente', tracking=True)
-    warehouse_id = fields.Many2one('stock.warehouse', string='Almacen', tracking=True)
+    warehouse_id = fields.Many2one('stock.warehouse', string='Almacen', tracking=True, default=lambda self: self.env.user.default_consignment_warehouse_id)
     sale_order_ids = fields.Many2many('sale.order', 'rel_consignment_sale', 'consignment_order_id', 'sale_order_id',
                                       string='Ordenes', tracking=True, copy="False")
     user_id = fields.Many2one('res.users', string='Responsable', default=lambda self: self.env.user)
@@ -32,7 +32,7 @@ class ConsignmentOrder(models.Model):
     no_of_move_line = fields.Float(string='No of Move Line', compute='compute_no_of_move')
     no_of_so = fields.Float(string='No of Move Line', compute='compute_no_of_move')
     is_so_create = fields.Boolean(string="Is Sale Order Created")
-    route_id = fields.Many2one('stock.route', 'Ruta', required=True, ondelete='cascade')
+    route_id = fields.Many2one('stock.route', 'Ruta', required=True, ondelete='cascade', default=lambda self: self.env.user.default_route_id)
     #location_id = fields.Many2one('stock.location', 'Ubicación de origen', required=True)
     #location_dest_id = fields.Many2one('stock.location', 'Ubicación de destino', required=True)
 

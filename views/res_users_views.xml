@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_users_form_view" model="ir.ui.view">
+		<field name="name">res_users_form_view</field>
+		<field name="model">res.users</field>
+		<field name="inherit_id" ref="base.view_users_form"/>
+		<field name="arch" type="xml">
+			<group name="messaging" position="after">
+				<group name="consignment" string="Consignación">
+					<field name="default_consignment_warehouse_id" />
+					<field name="default_route_id" />
+				</group>
+			</group>
+		</field>
+	</record>
+
+</odoo>
