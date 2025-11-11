@@ -21,6 +21,7 @@
             'views/product.xml',
             'views/res_partner.xml',
             'views/sale_order.xml',
+            'views/res_users_views.xml',
             'wizard/create_sale_order_wizard_view.xml',
             'wizard/sale_consignment_report_wizard_view.xml',
             'report/sale_consignment_report.xml',
