@@ -68,9 +68,9 @@ class SaleOrderInherit(models.Model):
         vals = {
             'date': fields.Date.context_today(self),
             'partner_id': self.partner_id.id,
-            'warehouse_id': self.warehouse_id.id,
+            'warehouse_id': self.env.user.default_consignment_warehouse_id.id or False,
             'line_ids': lines,
-            'route_id': 15,
+            'route_id': self.env.user.default_route_id.id or False,
             'sale_order_id': self.id,
         }
         consignment_id = self.env['consignment.order'].create(vals)
