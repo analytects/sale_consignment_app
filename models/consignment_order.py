@@ -19,7 +19,7 @@ class ConsignmentOrder(models.Model):
                                       string='Ordenes', tracking=True, copy="False")
     user_id = fields.Many2one('res.users', string='Responsable', default=lambda self: self.env.user)
     company_id = fields.Many2one('res.company', string='Compañia', store=True, readonly=True,
-                                 default=lambda self: self.env.user.company_id)
+                                 default=lambda self: self.env.company)
     state = fields.Selection([('quotation', 'Quotation'), ('waiting', 'Waiting Approval'), ('approved', 'Approved'),
                               ('consignment', 'Consignment'), ('sale', 'Sale Order'), ('done', 'Done'),
                               ('cancel', 'Cancel')], default='quotation', tracking=True)
