@@ -119,6 +119,7 @@ class ConsignmentOrder(models.Model):
                     'picking_id': picking.id,
                     'location_id': picking.location_id.id,
                     'product_return_moves': product_returns,
+                    'company_id': rec.company_id.id,
                 }
                 wizard = self.env['stock.return.picking'].with_context(ctx).create(wizard_values)
                 new_picking = wizard.create_returns()
@@ -172,6 +173,7 @@ class ConsignmentOrder(models.Model):
                     'picking_id': stock_picking.id,
                     'location_id': stock_picking.location_id.id,
                     'product_return_moves': product_returns,
+                    'company_id': rec.company_id.id,
                 }
                 wizard = self.env['stock.return.picking'].with_context(ctx).create(wizard_values)
 
@@ -332,6 +334,7 @@ class ConsignmentOrder(models.Model):
             'state': 'draft',
             'scheduled_date': self.date,
             'is_consignment': True,
+            'company_id': self.company_id.id,
         }
 
     def _prepare_picking_lines(self, stock_picking):
