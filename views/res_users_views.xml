@@ -9,6 +9,7 @@
 				<group name="consignment" string="Consignación">
 					<field name="default_consignment_warehouse_id" />
 					<field name="default_route_id" />
+					<field name="default_so_warehouse_id" domain="[('is_consignment_warehouse', '=', True)]" />
 				</group>
 			</group>
 		</field>

@@ -12,3 +12,7 @@ class ResUsers(models.Model):
         comodel_name='stock.route',
         string='Ruta de Consignación'
     )
+    default_so_warehouse_id = fields.Many2one(
+        comodel_name='stock.warehouse',
+        string='Almacén de Venta de consignación'
+    )
