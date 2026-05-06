@@ -31,6 +31,7 @@
                             <th width="40%">Producto</th>
                             <th width="10%">Cantidad</th>
                             <th width="10%">Cantidad <br/> entregada</th>
+                            <th width="10%">Cantidad <br/> facturada</th>
                             <th width="10%">Precio de <br/> lista</th>
                             <th width="10%">Total</th>
                             <th width="10%">Monto <br/> facturado</th>
@@ -38,6 +39,7 @@
 
                         <t t-set="total_quantity" t-value="0"/>
                         <t t-set="total_delivery" t-value="0"/>
+                        <t t-set="total_qty_invoiced" t-value="0"/>
                         <t t-set="total_price" t-value="0"/>
                         <t t-set="total_total_price" t-value="0"/>
                         <t t-set="total_invoiced" t-value="0"/>
@@ -46,6 +48,7 @@
                             <td width="40%"><span t-field="line_id.product_id.name"/></td>
                             <td width="10%"><span t-field="line_id.quantity" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-field="line_id.quantity_delivery" t-options='{"widget": "float", "precision": 2}'/></td>
+                            <td width="10%"><span t-field="line_id.quantity_invoiced" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-field="line_id.product_price" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-esc="(line_id.product_price * line_id.quantity)" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-field="line_id.price_invoiced" t-options='{"widget": "float", "precision": 2}'/></td>
