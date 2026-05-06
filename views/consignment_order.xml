@@ -111,7 +111,7 @@
 								<field name="partner_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1" domain="[('is_consignment', '=', True)]" />
 								<field name="warehouse_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" placeholder="Selecciona almacén de consignación" required="1"/>
 								<field name="route_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" options="{'no_create': True, 'no_edit': True}" required="1"/>
-								<field name="so_warehouse_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" placeholder="Selecciona almacén de venta de consignación" required="1"/>
+								<field name="so_warehouse_id" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')" placeholder="Selecciona almacén de venta de consignación" required="0"/>
 							</group>
 							<group>
 								<field name="date" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')"/>
