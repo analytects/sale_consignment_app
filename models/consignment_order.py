@@ -534,11 +534,13 @@ class ConsignmentOrderLine(models.Model):
             quantity_invoiced = 0.0
 
             for k in line.consignment_order_id.sale_order_ids:
+                for so_line in k.order_line:
+                    if so_line.product_id == line.product_id:
+                        quantity_invoiced += so_line.qty_invoiced
                 for move in k.invoice_ids:
                     for j in move.invoice_line_ids:
                         if j.product_id == line.product_id:
                             total_invoiced += j.price_total
-                            quantity_invoiced += j.qty_invoiced
             line.price_invoiced = total_invoiced
             line.quantity_invoiced = quantity_invoiced
 
