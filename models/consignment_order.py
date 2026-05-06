@@ -429,6 +429,7 @@ class ConsignmentOrderLine(models.Model):
     product_price = fields.Float(string="Precio Lista", readonly=True)
     quantity_delivery = fields.Float(string="Cantidad entregada", compute="_compute_quantity_delivery", readonly=True)
     price_invoiced = fields.Float(string="Facturado", compute="_compute_price_invoiced", readonly=True)
+    quantity_invoiced = fields.Float(string="Cantidad facturada", compute="_compute_price_invoiced", readonly=True)
 
     @api.depends('product_id')
     def compute_show_details(self):
@@ -530,35 +531,16 @@ class ConsignmentOrderLine(models.Model):
     def _compute_price_invoiced(self):
         for line in self:
             total_invoiced = 0.0
+            quantity_invoiced = 0.0
 
             for k in line.consignment_order_id.sale_order_ids:
                 for move in k.invoice_ids:
                     for j in move.invoice_line_ids:
                         if j.product_id == line.product_id:
                             total_invoiced += j.price_total
-
-            """
-            sale_order = self.env['sale.order'].search([
-                ('origin', '=', line.consignment_order_id.name),
-                ('state', '=', 'sale')
-            ])
-
-            if sale_order:
-                for so in sale_order:
-
-                    account_move = self.env['account.move'].search([
-                        ('invoice_origin', '=', so.name),
-                        ('state', '=', 'posted')
-                    ])
-
-                    if account_move:
-                        for move in account_move:
-                            for i in move.invoice_line_ids:
-                                if i.product_id == line.product_id:
-                                    total_invoiced += i.price_total
-            """
-
+                            quantity_invoiced += j.qty_invoiced
             line.price_invoiced = total_invoiced
+            line.quantity_invoiced = quantity_invoiced
 
 class ConsignmentOrderLot(models.Model):
     _name = "consignment.order.lot"

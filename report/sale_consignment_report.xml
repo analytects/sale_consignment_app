@@ -31,65 +31,31 @@
                             <th width="40%">Producto</th>
                             <th width="10%">Cantidad</th>
                             <th width="10%">Cantidad <br/> entregada</th>
+                            <th width="10%">Cantidad <br/> facturada</th>
                             <th width="10%">Precio de <br/> lista</th>
                             <th width="10%">Total</th>
                             <th width="10%">Monto <br/> facturado</th>
-
-                            <!--<th width="9%">Cantidad de venta</th>
-                            <th width="9%">Cantidad restante</th>
-                            <th width="9%">Cantidad disponible</th>
-                            <th width="9%">Precio Unitario</th>
-                            <th width="9%">Total Consignación</th>
-                            <th width="9%">Venta Total</th>
-                            <th width="9%">Costo Total</th>
-                            <th width="9%">Beneficio Total</th>-->
-
                         </tr>
 
                         <t t-set="total_quantity" t-value="0"/>
                         <t t-set="total_delivery" t-value="0"/>
+                        <t t-set="total_qty_invoiced" t-value="0"/>
                         <t t-set="total_price" t-value="0"/>
                         <t t-set="total_total_price" t-value="0"/>
                         <t t-set="total_invoiced" t-value="0"/>
 
                         <tr t-foreach="doc.consignment_order_id.line_ids" t-as="line_id">
-                            
-                            <!--
-                            <t t-set="sale_price" t-value="line_id.product_id.lst_price"/>
-                            <t t-set="cost_price" t-value="line_id.product_id.standard_price"/>
-                            <t t-set="sale_amount" t-value="sale_price * line_id.sale_qty"/>
-                            <t t-set="consignment_amount" t-value="sale_price * line_id.quantity"/>
-                            <t t-set="cost_amount" t-value="cost_price * line_id.sale_qty"/>
-                            <t t-set="profit_amount" t-value="sale_amount - cost_amount"/>
-                            -->
-                            
                             <td width="40%"><span t-field="line_id.product_id.name"/></td>
                             <td width="10%"><span t-field="line_id.quantity" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-field="line_id.quantity_delivery" t-options='{"widget": "float", "precision": 2}'/></td>
+                            <td width="10%"><span t-field="line_id.total_qty_invoiced" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-field="line_id.product_price" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-esc="(line_id.product_price * line_id.quantity_delivery)" t-options='{"widget": "float", "precision": 2}'/></td>
                             <td width="10%"><span t-field="line_id.price_invoiced" t-options='{"widget": "float", "precision": 2}'/></td>
-                            
-                            <!--
-                            <td width="9%"><span t-field="line_id.sale_qty"/></td>
-                            <td width="9%"><span t-field="line_id.remain_qty"/></td>
-                            <td width="9%"><span t-field="line_id.qty_on_hand"/></td>
-                            <td width="9%"><span t-esc="sale_price"/></td>
-                            <td width="9%"><span t-esc="consignment_amount"/></td>
-                            <td width="9%"><span t-esc="sale_amount"/></td>
-                            <td width="9%"><span t-esc="cost_amount"/></td>
-                            <td width="9%"><span t-esc="profit_amount"/></td>
-                            -->
-
-                            <!--
-                            <t t-set="total_sale_amount" t-value="total_sale_amount + sale_amount"/>
-                            <t t-set="total_consignment_amount" t-value="total_consignment_amount + consignment_amount"/>
-                            <t t-set="total_cost_amount" t-value="total_cost_amount + cost_amount"/>
-                            <t t-set="total_profit_amount" t-value="total_profit_amount + profit_amount"/>
-                            -->
 
                             <t t-set="total_quantity" t-value="total_quantity + line_id.quantity"/>
                             <t t-set="total_delivery" t-value="total_delivery + line_id.quantity_delivery"/>
+                            <t t-set="total_qty_invoiced" t-value="total_qty_invoiced + line_id.quantity_invoiced"/>
                             <t t-set="total_price" t-value="total_price + line_id.product_price"/>
                             <t t-set="total_total_price" t-value="total_total_price + (line_id.product_price * line_id.quantity_delivery)"/>
                             <t t-set="total_invoiced" t-value="total_invoiced + line_id.price_invoiced"/>
