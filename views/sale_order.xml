@@ -17,7 +17,7 @@
 							invisible="state != 'draft'" />
 				</button>
 				<xpath expr="//field[@name='partner_id']" position="attributes">
-					<attribute name="readonly">is_locked_by_consignment or is_locked_by_consignment_order</attribute>
+					<attribute name="readonly">state in ['cancel', sale'] or is_locked_by_consignment or is_locked_by_consignment_order</attribute>
 				</xpath>
 				<xpath expr="//field[@name='order_line']" position="attributes">
 					<attribute name="readonly">is_locked_by_consignment or is_locked_by_consignment_order</attribute>
