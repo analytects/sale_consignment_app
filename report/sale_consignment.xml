@@ -56,7 +56,7 @@
                             <t t-set="total_quantity" t-value="total_quantity + line_id.quantity"/>
                             <t t-set="total_delivery" t-value="total_delivery + line_id.quantity_delivery"/>
                             <t t-set="total_price" t-value="total_price + line_id.product_price"/>
-                            <t t-set="total_total_price" t-value="total_total_price + (line_id.product_price * total_quantity)"/>
+                            <t t-set="total_total_price" t-value="total_total_price + (line_id.product_price * line_id.quantity)"/>
                             <t t-set="total_invoiced" t-value="total_invoiced + line_id.price_invoiced"/>
                         </tr>
                     </table><br></br>
