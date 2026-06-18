@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError, ValidationError 
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools.float_utils import float_compare 
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -85,10 +86,143 @@ class ConsignmentOrder(models.Model):
 
     def action_cancel(self):
         for rec in self:
+            # Mejora San Bernardo Ticket #06302:
+            # Antes de cancelar la consignación se controlan los albaranes
+            # asociados para evitar transferencias activas después de cancelar.
+            rec._check_and_cancel_related_pickings_before_cancel()
             # if rec.sale_order_id:
             #     rec.sale_order_id.action_cancel()
             rec.state = 'cancel'
-            rec.action_create_return()
+            rec.message_post(body=_("Consignación cancelada. Se validaron los albaranes asociados para evitar transferencias activas pendientes."))
+
+    def _get_related_sale_orders_for_cancel(self):
+        self.ensure_one()
+        sale_orders = self.sale_order_ids
+        if self.sale_order_id:
+            sale_orders |= self.sale_order_id
+        sale_orders |= self.env['sale.order'].search([('consignment_order_id', '=', self.id)])
+        return sale_orders
+
+    def _get_related_pickings_for_cancel(self):
+        """Obtiene albaranes relacionados directa o indirectamente.
+
+        Considera:
+        - Albaranes cuyo origen es la consignación.
+        - Albaranes de las ventas generadas o relacionadas.
+        - Albaranes cuyo origen sea una venta relacionada.
+        - Retornos ligados a la consignación para cancelar retornos abiertos.
+        """
+        self.ensure_one()
+        Picking = self.env['stock.picking']
+        sale_orders = self._get_related_sale_orders_for_cancel()
+        origins = [self.name]
+        origins += [name for name in sale_orders.mapped('name') if name]
+
+        pickings = Picking.search([('origin', 'in', origins)])
+        pickings |= sale_orders.mapped('picking_ids')
+        pickings |= Picking.search([('consignment_id', '=', self.id)])
+
+        # Mantener solo registros reales y sin duplicados.
+        return pickings.exists()
+
+    def _is_return_picking_for_cancel_control(self, picking):
+        self.ensure_one()
+        if picking.consignment_id == self:
+            return True
+        return any(picking.move_ids_without_package.mapped('origin_returned_move_id'))
+
+    def _get_returned_qty_for_move(self, move):
+        self.ensure_one()
+        returned_qty = 0.0
+        returned_moves = move.returned_move_ids.filtered(lambda m: m.state == 'done')
+        for returned_move in returned_moves:
+            # Se priorizan retornos hacia la ubicación origen del movimiento original.
+            # Si Odoo creó el vínculo origin_returned_move_id, se toma como trazabilidad válida.
+            qty = returned_move.quantity
+            returned_qty += returned_move.product_uom._compute_quantity(qty, move.product_uom)
+        return returned_qty
+
+    def _picking_has_complete_return(self, picking):
+        self.ensure_one()
+        done_moves = picking.move_ids_without_package.filtered(
+            lambda m: m.state == 'done' and not m.scrapped and m.product_id.type != 'service'
+        )
+        if not done_moves:
+            return True
+
+        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        for move in done_moves:
+            demanded_qty = move.quantity
+            returned_qty = self._get_returned_qty_for_move(move)
+            if float_compare(returned_qty, demanded_qty, precision_digits=precision) < 0:
+                return False
+        return True
+
+    def _get_incomplete_return_lines_message(self, picking):
+        self.ensure_one()
+        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        lines = []
+        for move in picking.move_ids_without_package.filtered(lambda m: m.state == 'done' and not m.scrapped and m.product_id.type != 'service'):
+            demanded_qty = move.quantity
+            returned_qty = self._get_returned_qty_for_move(move)
+            if float_compare(returned_qty, demanded_qty, precision_digits=precision) < 0:
+                lines.append("- %s: retornado %s de %s %s" % (
+                    move.product_id.display_name,
+                    returned_qty,
+                    demanded_qty,
+                    move.product_uom.name,
+                ))
+        return "\n".join(lines)
+
+    def _check_and_cancel_related_pickings_before_cancel(self):
+        """Control principal de cancelación de consignación.
+
+        RF-01: cancela automáticamente albaranes no validados.
+        RF-02/RF-03/RF-04: bloquea albaranes validados sin retorno completo.
+        RF-05: deja trazabilidad en chatter.
+        """
+        for rec in self:
+            related_pickings = rec._get_related_pickings_for_cancel().filtered(lambda p: p.state != 'cancel')
+
+            # Cancelar primero albaranes abiertos/no validados.
+            cancelable_pickings = related_pickings.filtered(lambda p: p.state not in ('done', 'cancel'))
+            for picking in cancelable_pickings:
+                try:
+                    picking.action_cancel()
+                except Exception as exc:
+                    raise UserError(_(
+                        "No es posible cancelar la consignación %(consignment)s porque el albarán %(picking)s no pudo cancelarse automáticamente.\nMotivo técnico: %(error)s"
+                    ) % {
+                        'consignment': rec.name,
+                        'picking': picking.name,
+                        'error': str(exc),
+                    })
+                msg = _("Albarán %(picking)s cancelado automáticamente al cancelar la consignación %(consignment)s.") % {
+                    'picking': picking.name,
+                    'consignment': rec.name,
+                }
+                rec.message_post(body=msg)
+                picking.message_post(body=msg)
+
+            # Validar albaranes hechos. Los retornos hechos no bloquean; son evidencia.
+            done_pickings = related_pickings.filtered(lambda p: p.state == 'done' and not rec._is_return_picking_for_cancel_control(p))
+            for picking in done_pickings:
+                if not rec._picking_has_complete_return(picking):
+                    detail = rec._get_incomplete_return_lines_message(picking)
+                    msg = _(
+                        "No es posible cancelar la consignación %(consignment)s porque el albarán %(picking)s ya fue validado. "
+                        "Primero debe operar y validar el retorno completo de la mercadería a la bodega correspondiente y luego intentar cancelar nuevamente."
+                    ) % {
+                        'consignment': rec.name,
+                        'picking': picking.name,
+                    }
+                    if detail:
+                        msg += "\n\n" + _("Detalle pendiente de retorno:") + "\n" + detail
+                    rec.message_post(body=msg.replace('\n', '<br/>'))
+                    raise UserError(msg)
+
+            if done_pickings:
+                rec.message_post(body=_("Se permitió cancelar la consignación porque los albaranes validados asociados tienen retorno completo validado."))
     
     def action_create_return(self):
         for rec in self:
