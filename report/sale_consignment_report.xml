@@ -91,10 +91,6 @@
                             <td width="10"><span t-esc="total_delivery" t-options='{"widget": "float", "precision": 2}'/></td>
                         </tr>
                         <tr>
-                            <th width="20">Total precio lista</th>
-                            <td width="10"><span t-esc="total_price" t-options='{"widget": "float", "precision": 2}'/></td>
-                        </tr>
-                        <tr>
                             <th width="20">Total</th>
                             <td width="10"><span t-esc="total_total_price" t-options='{"widget": "float", "precision": 2}'/></td>
                         </tr>
