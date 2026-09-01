@@ -430,6 +430,12 @@ class ConsignmentOrderLine(models.Model):
     quantity_delivery = fields.Float(string="Cantidad entregada", compute="_compute_quantity_delivery", readonly=True)
     price_invoiced = fields.Float(string="Facturado", compute="_compute_price_invoiced", readonly=True)
     quantity_invoiced = fields.Float(string="Cantidad facturada", compute="_compute_price_invoiced", readonly=True)
+    remain_amount = fields.Float(string="Monto restante", compute="_compute_remain_amount", readonly=True, store=True)
+
+    @api.depends('remain_qty', 'product_price')
+    def _compute_remain_amount(self):
+        for rec in self:
+            rec.remain_amount = rec.remain_qty * rec.product_price
 
     @api.depends('product_id')
     def compute_show_details(self):
