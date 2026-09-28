@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools import float_compare
 
 class SaleOrderInherit(models.Model):
     _inherit = "sale.order"
@@ -57,6 +58,7 @@ class SaleOrderInherit(models.Model):
     def action_convert_to_consignment(self):
         if not self.partner_id.is_consignment:
             raise UserError(_('Partner "{0}" is not allowed to create consignments'.format(self.partner_id.name)))
+        self._check_consignment_discount_limit()
         # convert to consignment.order
         lines = []
         for line in self.order_line:
@@ -86,7 +88,22 @@ class SaleOrderInherit(models.Model):
             'domain': [('id', '=', consignment_id.id)],
             'type': 'ir.actions.act_window',
         }
-    
+
+    def _check_consignment_discount_limit(self):
+        user = self.env.user
+        # Fields come from sale_order_discount_approval_odoo, which may not be installed
+        if 'is_discount_control' not in user._fields or not user.is_discount_control:
+            return
+        for line in self.order_line:
+            if line.discount > user.allow_discount:
+                raise UserError(_(
+                    'Cannot convert to consignment: the discount of product "%(product)s" (%(discount)s%%) '
+                    'exceeds your allowed discount (%(allowed)s%%).',
+                    product=line.product_id.display_name,
+                    discount=line.discount,
+                    allowed=user.allow_discount,
+                ))
+
     def action_confirm(self):
         res = super(SaleOrderInherit, self).action_confirm()
         picking_ids = self.env['stock.picking'].search([
@@ -107,6 +124,16 @@ class SaleOrderLineInherit(models.Model):
     show_details = fields.Boolean(string="Show Lot Details")
     stock_move_id = fields.Many2one('stock.move', 'Stock Move')
     order_line_lot_ids = fields.One2many('sale.order.line.lot', 'line_id')
+
+    def write(self, vals):
+        if 'discount' in vals:
+            for line in self:
+                if line.order_id.consignment_order_id and float_compare(
+                        line.discount, vals['discount'] or 0.0,
+                        precision_digits=line._fields['discount'].get_digits(self.env)[1]) != 0:
+                    raise UserError(_(
+                        'The line discount cannot be changed on sale orders that come from a consignment order.'))
+        return super().write(vals)
 
     def action_show_details(self):
         self.ensure_one()

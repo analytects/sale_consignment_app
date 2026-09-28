@@ -51,6 +51,7 @@ class CreateSaleOrderWizard(models.TransientModel):
                                                                   'line_id': sale_order_line_id.id
                                                                   })
 
+            sale_order_id.action_confirm()
             rec.consignment_order_id.sale_order_ids = [(4, sale_order_id.id)]
             rec.consignment_order_id.is_so_create = True
             rec.consignment_order_id.state = 'sale'

@@ -290,6 +290,28 @@ msgid "Date From should be less then Date to"
 msgstr ""
 
 #. module: sale_consignment_app
+#. odoo-python
+#: code:addons/sale_consignment_app/models/sale_order.py:0
+#, python-format
+msgid ""
+"Cannot convert to consignment: the discount of product \"%(product)s\" "
+"(%(discount)s%%) exceeds your allowed discount (%(allowed)s%%)."
+msgstr ""
+"No se puede convertir a consignación: el descuento del producto \"%(product)s\" "
+"(%(discount)s%%) excede su descuento permitido (%(allowed)s%%)."
+
+#. module: sale_consignment_app
+#. odoo-python
+#: code:addons/sale_consignment_app/models/sale_order.py:0
+#, python-format
+msgid ""
+"The line discount cannot be changed on sale orders that come from a "
+"consignment order."
+msgstr ""
+"No se puede modificar el descuento de las líneas en órdenes de venta que "
+"provienen de una orden de consignación."
+
+#. module: sale_consignment_app
 #: model:ir.model.fields,field_description:sale_consignment_app.field_consignment_order_line__quantity
 #: model:ir.model.fields,field_description:sale_consignment_app.field_create_sale_order_line_wizard__quantity
 msgid "Demand"
