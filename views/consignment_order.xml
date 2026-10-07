@@ -135,6 +135,7 @@
 										<field name="quantity_delivery" readonly="1"/>
 										<field name="price_invoiced" readonly="1"/>
 										<field name="product_price" readonly="0"/>
+										<field name="remain_amount" readonly="1" sum="Faltante"/>
 										<field name="show_details" column_invisible="1"/>
 										<button name="action_show_details"
 												string="Register lots, packs, location"
