@@ -285,7 +285,8 @@ class ConsignmentOrder(models.Model):
         stock_picking = self.env['stock.picking'].create(pick_vals)
         if stock_picking:
             self._prepare_picking_lines(stock_picking)
-            #stock_picking.action_confirm()
+            stock_picking.action_confirm()
+            stock_picking.action_assign()
 
         self.state = 'approved'
 
@@ -341,37 +342,9 @@ class ConsignmentOrder(models.Model):
     def _prepare_picking_lines(self, stock_picking):
         move_lines = []
         for line_id in self.line_ids:
-
-            #Buscar ubicaciones con stock
-            """
-            quant_domain = [
-                ('product_id', '=', line_id.product_id.id),
-                ('location_id', 'child_of', stock_picking.location_id.id),
-                ('inventory_quantity_auto_apply', '>=', line_id.quantity)
-            ]
-            """
-            quant_domain = [
-                ('product_id', '=', line_id.product_id.id),
-                ('location_id', 'child_of', stock_picking.location_id.id),
-                ('stored_inventory_quantity', '>=', line_id.quantity),
-                ('on_hand', '=', True),
-                ('location_id.usage', '=', 'internal')
-            ]
-            #stock_quant = self.env['stock.quant'].search(quant_domain, limit=1)
-
-            stock_quants = self.env['stock.quant'].search(quant_domain)
-            stock_quants = sorted(stock_quants, key=lambda q: len(q.location_id.child_ids))
-            stock_quant = stock_quants[0] if stock_quants else None
-
-            if stock_quant:
-                location_temp = stock_quant.location_id.id
-            else:
-                location_temp = stock_picking.location_id.id
-
             if line_id.show_details:
                 for line_lot in line_id.consignment_lot_ids:
                     move_lines.append((0, 0, {
-                        'picking_id': stock_picking.id,
                         'product_id': line_lot.product_id.id,
                         'product_uom_qty': line_lot.quantity,
                         'product_uom': line_lot.uom_id.id,
@@ -381,20 +354,14 @@ class ConsignmentOrder(models.Model):
                     }))
             else:
                 move_lines.append((0, 0, {
-                    'picking_id': stock_picking.id,
                     'product_id': line_id.product_id.id,
-                    #'product_uom_qty': line_id.quantity,
                     'product_uom_qty': line_id.quantity,
-                    'quantity': line_id.quantity,
                     'product_uom': line_id.product_id.uom_id.id,
-                    #'product_uom_id': line_id.product_id.uom_id.id,
-                    #'location_id': stock_picking.location_id.id,
-                    'location_id': location_temp,
+                    'location_id': stock_picking.location_id.id,
                     'location_dest_id': stock_picking.location_dest_id.id,
                     'name': self.name,
                 }))
-        
-        #stock_picking.write({'move_line_ids': move_lines})
+
         stock_picking.write({'move_ids_without_package': move_lines})
 
     @api.depends('line_ids')
