@@ -42,12 +42,12 @@
 						<notebook>
 							<page string="Order Line Lot" invisible="not show_details">
 								<field name="order_line_lot_ids" readonly="1">
-									<tree editable="bottom">
+									<list editable="bottom">
 										<field name="line_id" column_invisible="1"/>
 										<field name="product_id" options="{'no_create': True, 'no_open': True}" invisible="1"/>
 										<field name="lot_id" />
 										<field name="quantity"/>
-									</tree>
+									</list>
 								</field>
 							</page>
 						</notebook>

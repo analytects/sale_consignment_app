@@ -32,7 +32,7 @@ class CreateSaleOrderWizard(models.TransientModel):
                         raise ValidationError('Total Sale Qty Must be Less Then Demand Quantity')
                 sale_order_line_id = sale_order_id.order_line.create({'product_id': line_id.product_id.id,
                                                                       'product_uom_qty': line_id.remain_qty,
-                                                                      'product_uom': line_id.product_id.uom_id.id,
+                                                                      'product_uom_id': line_id.product_id.uom_id.id,
                                                                       'stock_move_id': line_id.stock_move_id.id,
                                                                       'show_details': line_id.show_details,
                                                                       #'price_unit': line_id.unit_price,

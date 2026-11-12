@@ -131,8 +131,8 @@ class ConsignmentOrder(models.Model):
     
     def get_unsold_products(self, picking_ids, sale_order_ids):
         self.ensure_one()
-        original_lines = picking_ids[0].move_ids_without_package
-        so_lines = sale_order_ids.mapped('picking_ids.move_ids_without_package')
+        original_lines = picking_ids[0].move_ids
+        so_lines = sale_order_ids.mapped('picking_ids.move_ids')
         for line in so_lines:
             product_lines = original_lines.filtered(lambda m: m.product_id == line.product_id)
             if product_lines:
@@ -163,7 +163,7 @@ class ConsignmentOrder(models.Model):
                 })
 
                 product_returns = []
-                for move in stock_picking.move_ids_without_package:
+                for move in stock_picking.move_ids:
                     product_returns.append((0, 0, {
                         'product_id': move.product_id.id,
                         'quantity': move.quantity,
@@ -184,7 +184,7 @@ class ConsignmentOrder(models.Model):
                 if new_picking_id:
                     created_picking = self.env['stock.picking'].browse(new_picking_id)
                     if created_picking.state == 'assigned':
-                        for mv in created_picking.move_ids_without_package:
+                        for mv in created_picking.move_ids:
                             mv.quantity = mv.product_uom_qty
                         created_picking.button_validate()
                     created_picking.origin = stock_picking.origin
@@ -234,8 +234,8 @@ class ConsignmentOrder(models.Model):
         return {
             'name': _('Sale Order'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
-            'views': [(tree_view_id, 'tree'), (form_view_id, 'form')],
+            'view_mode': 'list,form',
+            'views': [(tree_view_id, 'list'), (form_view_id, 'form')],
             'res_model': 'sale.order',
             'domain': [('consignment_order_id', '=', self.id)],
             'context': {'create': 0, 'edit': 0},
@@ -250,8 +250,8 @@ class ConsignmentOrder(models.Model):
         return {
             'name': _('Transferencias'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
-            'views': [(tree_view_id, 'tree'), (form_view_id, 'form')],
+            'view_mode': 'list,form',
+            'views': [(tree_view_id, 'list'), (form_view_id, 'form')],
             'res_model': 'stock.picking',
             'domain': [('origin', '=', self.name)],
             'context': {'create': 0, 'edit': 0},
@@ -261,17 +261,18 @@ class ConsignmentOrder(models.Model):
         return {
             'name': _('Devoluciones'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'stock.picking',
             'domain': [('consignment_id', '=', self.id)],
             'context': {'create': 0, 'edit': 0},
             'type': 'ir.actions.act_window',
         }
 
-    @api.model
-    def create(self, vals):
-        vals['name'] = self.env['ir.sequence'].next_by_code('consignment.order') or 'New'
-        return super(ConsignmentOrder, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals['name'] = self.env['ir.sequence'].next_by_code('consignment.order') or 'New'
+        return super().create(vals_list)
 
     def action_waiting_approval(self):
         self.state = 'waiting'
@@ -350,7 +351,6 @@ class ConsignmentOrder(models.Model):
                         'product_uom': line_lot.uom_id.id,
                         'location_id': stock_picking.location_id.id,
                         'location_dest_id': stock_picking.location_dest_id.id,
-                        'name': self.name,
                     }))
             else:
                 move_lines.append((0, 0, {
@@ -359,10 +359,9 @@ class ConsignmentOrder(models.Model):
                     'product_uom': line_id.product_id.uom_id.id,
                     'location_id': stock_picking.location_id.id,
                     'location_dest_id': stock_picking.location_dest_id.id,
-                    'name': self.name,
                 }))
 
-        stock_picking.write({'move_ids_without_package': move_lines})
+        stock_picking.write({'move_ids': move_lines})
 
     @api.depends('line_ids')
     def _compute_all_remain_qty_is_zero(self):
@@ -436,21 +435,20 @@ class ConsignmentOrderLine(models.Model):
             ),
         }
 
-    @api.model
-    def create(self, vals):
-        if vals.get('product_id') and vals.get('consignment_order_id'):
-            product = self.env['product.product'].browse(vals['product_id'])
-            consignment_order = self.env['consignment.order'].browse(vals['consignment_order_id'])
-            partner = consignment_order.partner_id
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('product_id') and vals.get('consignment_order_id'):
+                product = self.env['product.product'].browse(vals['product_id'])
+                consignment_order = self.env['consignment.order'].browse(vals['consignment_order_id'])
+                partner = consignment_order.partner_id
 
-            if not partner:
-                raise UserError(_("No se encontró un contacto válido para la orden de consignación."))
-            if consignment_order.company_id.add_price_discount:
-                return super(ConsignmentOrderLine, self).create(vals)
+                if not partner:
+                    raise UserError(_("No se encontró un contacto válido para la orden de consignación."))
+                if not consignment_order.company_id.add_price_discount:
+                    vals['product_price'] = self._get_product_price(product, partner)
 
-            vals['product_price'] = self._get_product_price(product, partner)
-
-        return super(ConsignmentOrderLine, self).create(vals)
+        return super().create(vals_list)
 
     def _get_product_price(self, product, partner):
         company = self.env.company
@@ -459,18 +457,12 @@ class ConsignmentOrderLine(models.Model):
         if not pricelist:
             return product.with_company(company).lst_price
 
-        try:
-            price = pricelist._get_product_price(
-                product, 
-                quantity=1.0, 
-                partner=partner, 
-                date=fields.Date.today(), 
-                uom_id=product.uom_id
-            )
-        except Exception as e:
-            # Si hay algún error al obtener el precio de la tarifa, se usa el precio de lista
-            self.env.cr.rollback()
-            price = product.with_company(company).lst_price
+        price = pricelist._get_product_price(
+            product,
+            quantity=1.0,
+            date=fields.Date.today(),
+            uom=product.uom_id,
+        )
 
         # Asegurarse de que el precio esté en la moneda de la compañía
         if pricelist.currency_id != company.currency_id:
@@ -494,7 +486,7 @@ class ConsignmentOrderLine(models.Model):
             ])
 
             for picking in stock_pickings:
-                for move in picking.move_ids_without_package:
+                for move in picking.move_ids:
                     if move.product_id == line.product_id:
                         total_quantity += move.quantity
 

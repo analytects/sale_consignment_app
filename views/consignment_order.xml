@@ -7,7 +7,7 @@
 			<field name="model">consignment.order</field>
 			<field name="priority">20</field>
 			<field name="arch" type="xml">
-				<tree>
+				<list>
 					<field name="name"/>
 					<field name="partner_id"/>
 					<field name="date"/>
@@ -15,7 +15,7 @@
 					<field name="sale_order_ids" widget="many2many_tags"/>
 					<field name="sale_order_id"/>
 					<field name="state"/>
-				</tree>
+				</list>
 			</field>
 		</record>
 
@@ -124,7 +124,7 @@
 						<notebook>
 							<page string="Consignment Order Line">
 								<field name="line_ids" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')">
-									<tree editable="bottom">
+									<list editable="bottom">
 										<field name="consignment_order_id" column_invisible="1"/>
 										<field name="product_tmpl_id" column_invisible="1"/>
 										<field name="product_id" options="{'no_create': True, 'no_open': True}" required="1"/>								 
@@ -145,7 +145,7 @@
 												width="0.1"
 												options="{&quot;warn&quot;: true}"/>
 
-									</tree>
+									</list>
 								</field>
 							</page>
 						</notebook>
@@ -168,7 +168,7 @@
 					<field name="partner_id"/>
 					<field name="date"/>
 					<field name="warehouse_id"/>
-					<group expand="0" string="Group By">
+					<group>
 						<filter string="Customer" name="partner_id" context="{'group_by': 'partner_id'}"/>
 						<filter string="Warehouse" name="warehouse_id" context="{'group_by': 'warehouse_id'}"/>
 						<filter string="Date" name="date" context="{'group_by': 'date'}"/>
@@ -183,7 +183,7 @@
 			<field name="res_model">consignment.order</field>
 			<field name="domain">[]</field>
         	<field name="context">{'default_is_consignment':True}</field>
-			<field name="view_mode">tree,search,form</field>
+			<field name="view_mode">list,form</field>
 		</record>
 
     <record id="action_consignment_sale" model="ir.actions.act_window">
@@ -192,7 +192,7 @@
        <field name="domain">[('sale_consignment', '=', True)]</field>
         <field name="context">{'default_is_consignment':True}</field>
         <field name="res_model">sale.order</field>
-        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity</field>
     </record>
 
 		<menuitem id="root_sale_consignment"
@@ -239,14 +239,14 @@
 						<notebook>
 							<page string="Consignment Order Line" invisible="not show_details">
 								<field name="consignment_lot_ids" readonly="state not in ('quotation', 'waiting', 'approved', 'cancel')">
-									<tree editable="bottom">
+									<list editable="bottom">
 										<field name="consignment_order_line_id" column_invisible="1"/>
 										<field name="product_id" options="{'no_create': True, 'no_open': True}" invisible="1"/>
 										<field name="lot_id" />
 										<field name="quantity"/>
 										<field name="qty_on_hand" readonly="1"/>
 										<field name="uom_id"/>
-									</tree>
+									</list>
 								</field>
 							</page>
 						</notebook>

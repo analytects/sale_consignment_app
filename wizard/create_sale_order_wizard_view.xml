@@ -18,7 +18,7 @@
                     <notebook>
 							<page string="Order Line">
 								<field name="line_ids">
-									<tree editable="bottom">
+									<list editable="bottom">
 										<field name="wizard_id" column_invisible="1"/>
 										<field name="product_id" options="{'no_create': True, 'no_open': True}" readonly="1" force_save="True"/>
 										<field name="quantity" readonly="1" force_save="True"/>
@@ -34,7 +34,7 @@
 												icon="fa-list"
 												width="0.1"
 												options="{&quot;warn&quot;: true}"/>
-									</tree>
+									</list>
 								</field>
 							</page>
 						</notebook>
@@ -71,12 +71,12 @@
                     <notebook>
 							<page string="Lot">
 								<field name="lot_line_ids">
-									<tree editable="bottom">
+									<list editable="bottom">
 										<field name="line_id" invisible="1"/>
 										<field name="product_id" force_save="True" options="{'no_create': True, 'no_open': True}" readonly="1"/>
 										<field name="quantity"/>
 										<field name="lot_id" readonly="0" force_save="True" domain="[('product_id', '=', product_id)]"/>
-									</tree>
+									</list>
 								</field>
 							</page>
 						</notebook>

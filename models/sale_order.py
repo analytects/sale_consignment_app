@@ -48,8 +48,8 @@ class SaleOrderInherit(models.Model):
         return {
             'name': _('Traceability'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
-            'views': [(tree_view_id, 'tree'), (form_view_id, 'form')],
+            'view_mode': 'list,form',
+            'views': [(tree_view_id, 'list'), (form_view_id, 'form')],
             'res_model': 'stock.move.line',
             'domain': [('id', 'in', move_line_ids.ids)],
             'context': {'create': 0, 'edit': 0},
@@ -83,7 +83,7 @@ class SaleOrderInherit(models.Model):
         return {
             'name': _('Consignments'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'consignment.order',
             'domain': [('id', '=', consignment_id.id)],
             'type': 'ir.actions.act_window',

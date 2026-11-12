@@ -17,7 +17,7 @@
          <field name="domain">[('is_consignment', '=', True),('partner_type', '=', 'customer')]</field>
         <field name="context">{'default_is_consignment':True,'default_partner_type':'customer'}</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_mode">kanban,list,form</field>
     </record>
 
     <menuitem id="menu_consignment_customer"
@@ -32,7 +32,7 @@
         <field name="domain">[('is_consignment', '=', True),('partner_type', '=', 'vendor')]</field>
         <field name="context">{'default_is_consignment':True,'default_partner_type':'vendor'}</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_mode">kanban,list,form</field>
     </record>
 
     <menuitem id="menu_consignment_supplier"
