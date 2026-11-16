@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sale_consignment_app.HelpGuideAction">
+        <div class="o_action o_help_guide d-flex flex-column h-100 bg-view">
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                <i class="fa fa-book text-muted" aria-hidden="true"/>
+                <span class="fw-semibold text-truncate" t-esc="title"/>
+                <a class="btn btn-sm btn-secondary ms-auto" t-att-href="url" target="_blank" rel="noopener">
+                    <i class="fa fa-external-link me-1" aria-hidden="true"/>Abrir en pestaña nueva
+                </a>
+            </div>
+            <iframe class="flex-grow-1 w-100 border-0" t-att-src="url" t-att-title="title"/>
+        </div>
+    </t>
+</templates>

@@ -1,7 +1,7 @@
 {
     'name': 'Advance Consignment Management | Sale Consignment | Purchase Consignment | Sale Consignment Order | Consignment Inventory Management | Purchase Consignment Order',
     "author": "Edge Technologies",
-    'version': '19.0.1.0',
+    'version': '19.0.1.1',
     'live_test_url': "https://youtu.be/KdYBp1OwSag",
     "images":['static/description/main_screenshot.png'],
     'summary': 'Create consignment order consignment sale order consignment purchase order consignment sales consignment purchase consignment customer consignment vendor consignment delivery consignment stock consignment management process consignment purchase report',
@@ -27,9 +27,15 @@
         'wizard/create_sale_order_wizard_view.xml',
         'wizard/sale_consignment_report_wizard_view.xml',
         'report/sale_consignment_report.xml',
+        'views/help_menus.xml',
         'report/sale_consignment.xml',
 
     ],
+    'assets': {
+        'web.assets_backend': [
+            'sale_consignment_app/static/src/help/**/*',
+        ],
+    },
     'demo': [ ],
     'installable': True,
     'application': True,
