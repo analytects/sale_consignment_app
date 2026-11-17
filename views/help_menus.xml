@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_help_guide_admin" model="ir.actions.client">
+        <field name="name">Guía de administración · Consignación</field>
+        <field name="tag">sale_consignment_app.help_guide</field>
+        <field name="params" eval="{'url': '/sale_consignment_app/static/guide/admin.html'}"/>
+    </record>
+    <record id="action_help_guide_user" model="ir.actions.client">
+        <field name="name">Guía de usuario · Consignación</field>
+        <field name="tag">sale_consignment_app.help_guide</field>
+        <field name="params" eval="{'url': '/sale_consignment_app/static/guide/user.html'}"/>
+    </record>
+
+    <menuitem id="menu_help_root" name="Ayuda" parent="root_sale_consignment" sequence="99"/>
+    <menuitem id="menu_help_admin" name="Guía de administración" parent="menu_help_root"
+              action="action_help_guide_admin" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_help_user" name="Guía de usuario" parent="menu_help_root"
+              action="action_help_guide_user" sequence="20" groups="sale_consignment_app.group_sale_consignment"/>
+</odoo>
